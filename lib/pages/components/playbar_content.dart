@@ -1,0 +1,210 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:netplayer_web/operations/operations.dart';
+import 'package:netplayer_web/pages/components/empty_cover.dart';
+import 'package:netplayer_web/pages/playing.dart';
+import 'package:netplayer_web/variables/page_var.dart';
+import 'package:netplayer_web/variables/player_var.dart';
+import 'package:netplayer_web/variables/settings_var.dart';
+import 'package:netplayer_web/variables/user_var.dart';
+import 'package:skeletons_forked/skeletons_forked.dart';
+
+class PlaybarContent extends StatefulWidget {
+  const PlaybarContent({super.key});
+
+  @override
+  State<PlaybarContent> createState() => _PlaybarContentState();
+}
+
+class _PlaybarContentState extends State<PlaybarContent> {
+
+  PlayerVar p=Get.find();
+  final UserVar u = Get.find();
+  SettingsVar s=Get.find();
+  Operations operations=Operations();
+
+  void toPlaying(){
+    Get.to(
+      ()=>const Playing(),
+      // transition: Transition.downToUp,
+      curve: Curves.easeInOut,
+      duration: const Duration(milliseconds: 400),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(()=>
+      Material(
+        color: s.darkMode.value ? s.bgColor1 : Colors.grey[100],
+        child: Stack(
+          children: [
+            Obx(()=>
+              s.progressStyle.value==ProgressStyle.background ? Positioned(
+                child: Container(
+                  height: PageStatic().playbarHeight.toDouble()+MediaQuery.of(context).padding.bottom,
+                  width: MediaQuery.of(context).size.width*(p.nowPlay['duration']==0 ? 0.0 : (p.nowPlay['duration']==0 ? 0.0 : (p.playProgress.value / 1000 / p.nowPlay["duration"]).clamp(0.0, 1.0))),
+                  color: s.darkMode.value ? s.bgColor3 : Colors.blue[50]!.withAlpha(170),
+                )
+              ) : Container(),
+            ),
+            Column(
+              children: [
+                GestureDetector(
+                  onVerticalDragUpdate: (details) async {
+                    if(details.delta.dy<-10){
+                      toPlaying();
+                    }
+                  },
+                  onTap: (){
+                    toPlaying();
+                  },
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.transparent,
+                    ),
+                    height: PageStatic().playbarHeight.toDouble(),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10, right: 10),
+                      child: Obx(()=>
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Hero(
+                              tag: 'cover',
+                              child: SizedBox(
+                                height: 50,
+                                width: 50,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: p.nowPlay['id'].isEmpty ? EmptyCover() : p.nowPlay['playFrom']=='download' && p.cover.value!=null ? Image.memory(
+                                    p.cover.value!,
+                                    fit: BoxFit.contain,
+                                  ) : Image.network(
+                                    operations.coverLink(p.nowPlay["id"]),
+                                    fit: BoxFit.contain,
+                                    frameBuilder:(context, child, frame, wasSynchronouslyLoaded){
+                                      if (wasSynchronouslyLoaded) {
+                                        return child;
+                                      }
+                                      return AnimatedSwitcher(
+                                        duration: const Duration(milliseconds: 200),
+                                        child: frame != null ? child : SkeletonAvatar(
+                                          style: SkeletonAvatarStyle(
+                                            width: 50,
+                                            height: 50,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                )
+                              ),
+                            ),
+                            const SizedBox(width: 10,),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    p.nowPlay['title'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      decoration: TextDecoration.none,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    p.nowPlay['artist'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal,
+                                      fontSize: 12,
+                                      color: Colors.grey[400],
+                                      decoration: TextDecoration.none,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  )
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 15,),
+                            Stack(
+                              children: [
+                                Center(
+                                  child: SizedBox(
+                                    height: 42,
+                                    width: 42,
+                                    child: Material(
+                                      clipBehavior: Clip.antiAlias,
+                                      shape: CircleBorder(
+                                        side: s.progressStyle.value!=ProgressStyle.ring ? BorderSide(
+                                          color: s.darkMode.value ? Colors.white : Colors.black,
+                                          width: 2
+                                        ) : BorderSide.none
+                                      ),
+                                      color: s.darkMode.value ? s.bgColor3 : Colors.white,
+                                      child: InkWell(
+                                        onTap: (){
+                                          if(p.nowPlay["id"].isNotEmpty){
+                                            if(p.isPlay.value){
+                                              p.handler.pause();
+                                            }else{
+                                              p.handler.play();
+                                            }
+                                          }
+                                        },
+                                        child: Center(
+                                        child: AnimatedIcon(
+                                            icon: AnimatedIcons.play_pause,
+                                            progress: p.playbtnController,
+                                            size: 18,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                IgnorePointer(
+                                  child: s.progressStyle.value==ProgressStyle.ring || p.buffering.value ? Center(
+                                    child: SizedBox(
+                                      width: 42,
+                                      height: 42,
+                                      child: CircularProgressIndicator(
+                                        value: p.buffering.value ? null : (p.nowPlay['duration']==0 ? 0.0 : (p.playProgress.value / 1000 / p.nowPlay["duration"]).clamp(0.0, 1.0)),
+                                        color: s.darkMode.value ? Colors.white : Colors.black,
+                                        strokeWidth: 3,
+                                      ),
+                                    ),
+                                  ) : Container(),
+                                )
+                              ],
+                            ),
+                            const SizedBox(width: 5,),
+                            IconButton(
+                              onPressed: (){
+                                p.handler.skipToNext();
+                              },
+                              icon: const Icon(Icons.skip_next_rounded),
+                            )
+                          ],
+                        )
+                      ),
+                    )
+                  ),
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).padding.bottom,
+                )
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}

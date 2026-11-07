@@ -1,0 +1,350 @@
+// ignore_for_file: invalid_use_of_protected_member
+
+import 'dart:io';
+import 'dart:math';
+
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:audio_service/audio_service.dart';
+import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:netplayer_web/operations/operations.dart';
+import 'package:netplayer_web/operations/player_control.dart';
+import 'package:netplayer_web/operations/seek_check.dart';
+import 'package:netplayer_web/variables/player_var.dart';
+import 'package:netplayer_web/variables/settings_var.dart';
+import 'package:netplayer_web/variables/user_var.dart';
+import 'package:path_provider/path_provider.dart';
+
+class Handler extends BaseAudioHandler with QueueHandler, SeekHandler {
+
+  final player = AudioPlayer();
+  final seekCheck=SeekCheck();
+  final SettingsVar s=Get.find();
+  var playURL="";
+  late MediaItem item;
+  final Operations operations=Operations();
+
+  PlayerVar p=Get.find();
+  final UserVar u = Get.find();
+
+  bool playBeforeInterruption=false;
+
+  bool isSettingUrl = false;
+
+  Future<void> initSession() async {
+    final session = await AudioSession.instance;
+    await session.configure(const AudioSessionConfiguration.music());
+    session.interruptionEventStream.listen((event) {
+      if (event.begin) {
+        playBeforeInterruption=p.isPlay.value;
+        switch (event.type) {
+          case AudioInterruptionType.duck:
+            player.setVolume(0.5);
+            break;
+          case AudioInterruptionType.pause:
+          case AudioInterruptionType.unknown:
+            pause();
+            break;
+        }
+      } else {
+        switch (event.type) {
+          case AudioInterruptionType.duck:
+            player.setVolume(1);
+            break;
+          case AudioInterruptionType.pause:
+            if(playBeforeInterruption){
+              play();
+            }
+          case AudioInterruptionType.unknown:
+            break;
+        }
+      }
+    });
+  }
+
+  Handler(){
+
+    initSession();
+
+    player.positionStream.listen((position) {
+      var data=position.inMilliseconds;
+      if(!p.onSlide.value){
+        p.playProgress.value=data;
+      }
+      if(p.lyric.isNotEmpty && p.lyric.length!=1){
+        for (var i = 0; i < p.lyric.length; i++) {
+          if(i==p.lyric.length-1){
+            p.lyricLine.value=p.lyric.length;
+            break;
+          }else if(i==0 && data<p.lyric[i].time){
+            p.lyricLine.value=0;
+            break;
+          }else if(data>=p.lyric[i].time && data<p.lyric[i+1].time){
+            p.lyricLine.value=i+1;
+            break;
+          }
+        }
+      }else if(p.lyric.length==1){
+        p.lyricLine.value=0;
+      }
+    });
+    player.durationStream.listen((duration) {
+      if(p.nowPlay["duration"]==0){
+        p.nowPlay["duration"]=duration?.inSeconds ?? 0;
+      }
+    });
+    player.playerStateStream.listen((state) {
+      if(state.processingState == ProcessingState.completed) {
+        skipToNext();
+      }else if(state.processingState == ProcessingState.ready){
+        p.buffering.value=false;
+      }
+    });
+  }
+  
+  Future<void> setMedia(bool isPlay, {Duration? progress}) async {
+    playbackState.add(
+      PlaybackState(
+        playing: isPlay,
+        controls: [
+          MediaControl.skipToPrevious,
+          isPlay ? MediaControl.pause : MediaControl.play,
+          MediaControl.skipToNext,
+        ],
+        updatePosition: progress ?? Duration(milliseconds: p.playProgress.value),
+        processingState: AudioProcessingState.ready,
+        systemActions: const {
+          MediaAction.seek,
+          MediaAction.seekForward,
+          MediaAction.seekBackward,
+        },
+      )
+    );
+    item=MediaItem(
+      id: p.nowPlay["id"],
+      title: p.nowPlay["title"],
+      artist: p.nowPlay["artist"],
+      artUri: p.nowPlay['id'].isEmpty ? null :
+      p.nowPlay['playFrom']=='download' ? await getCoverFromFile() :
+      //  Uri.parse("${u.url.value}/rest/getCoverArt?v=1.12.0&c=netPlayer&f=json&u=${u.username.value}&t=${u.token.value}&s=${u.salt.value}&id=${p.nowPlay["id"]}"),
+      Uri.parse(operations.coverLink(p.nowPlay["id"])),
+      album: p.nowPlay["album"],
+      duration: Duration(seconds: p.nowPlay['duration']),
+    );
+    mediaItem.add(item);
+  }
+
+  Future<Uri?> getCoverFromFile() async {
+    if(p.cover.value==null){
+      return null;
+    }
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/${p.nowPlay["id"]}.png');
+
+      await file.writeAsBytes(p.cover.value!);
+      return file.uri;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // 播放
+  @override
+  Future<void> play({bool bindMedia=true, bool fromSkip=false}) async {
+    if(p.nowPlay["id"].isEmpty){
+      return;
+    }
+    if(p.nowPlay['playFrom']=='download'){
+      final filePath=p.nowPlay['filePath'];
+      if(filePath!=null){
+        final track = File(filePath);
+        final metadata = readMetadata(track, getImage: true);
+        if(metadata.pictures.isNotEmpty && !listEquals(metadata.pictures[0].bytes, p.cover.value)){
+          p.cover.value=metadata.pictures[0].bytes;
+        }
+      }
+      if(filePath!=playURL){
+        try {
+          await player.setFilePath(filePath);
+        } catch (_) {
+          await skipToNext();
+        }
+      } else if(fromSkip) {
+        await player.seek(Duration.zero);
+      }
+      player.play();
+      playURL=filePath;
+      if(bindMedia){
+        setMedia(true);
+      }
+      // p.isPlay.value=true;
+      p.isPlaySetter(true);
+    }else{
+      var url=seekCheck.enableSeek() ? "${u.url.value}/rest/stream?v=1.12.0&c=netPlayer&f=json&u=${u.username.value}&t=${u.token.value}&s=${u.salt.value}&id=${p.nowPlay["id"]}"
+      : "${u.url.value}/rest/stream?v=1.12.0&c=netPlayer&f=json&u=${u.username.value}&t=${u.token.value}&s=${u.salt.value}&id=${p.nowPlay["id"]}&maxBitRate=${s.quality.value.quality}";
+      if(url!=playURL){
+        p.buffering.value=true;
+        try {
+          await player.setUrl(url);
+        } catch (_) {
+          await skipToNext();
+        }
+      }else if(fromSkip) {
+        await player.seek(Duration.zero);
+      }
+      player.play();
+      playURL=url;
+      if(bindMedia){
+        setMedia(true);
+      }
+      // p.isPlay.value=true;
+      p.isPlaySetter(true);
+    }
+  }
+
+  // 暂停
+  @override
+  Future<void> pause() async {
+    if(p.nowPlay["id"].isEmpty){
+      return;
+    }
+    await player.pause();
+    setMedia(false);
+    // p.isPlay.value=false;
+    p.isPlaySetter(false);
+  }
+
+  // 停止播放
+  @override
+  Future<void> stop() async {
+    if(p.nowPlay["id"].isEmpty){
+      return;
+    }
+    await player.stop();
+    // p.isPlay.value=false;
+    p.isPlaySetter(false);
+    Map<String, Object> tmp={
+      'id': '',
+      'title': '',
+      'artist': '',
+      'playFrom': '',
+      'duration': 0,
+      'fromId': '',
+      'index': 0,
+      'album': '',
+      'list': [],
+    };
+    p.nowPlay.value=tmp;
+  }
+
+  // 跳转
+  @override
+  Future<void> seek(Duration position) async {
+    if(p.nowPlay["id"].isEmpty){
+      return;
+    }
+    p.onSlide.value=true;
+    await player.pause();
+    await player.seek(position);
+    setMedia(true, progress: position);
+    p.onSlide.value=false;
+    play(bindMedia: false);
+  }
+
+  int preHandler(int index, int length){
+    if(index==0){
+      return length-1;
+    }
+    return index-1;
+  }
+
+  // 上一首
+  @override
+  Future<void> skipToPrevious() async {
+
+    if (isSettingUrl) return;
+    isSettingUrl = true;
+
+    if(p.nowPlay["id"].isEmpty){
+      return;
+    }
+    if(p.nowPlay['playFrom']=='fullRandom'){
+      await PlayerControl().shufflePlay();
+      isSettingUrl = false;
+      return;
+    }
+    try {
+      var tmpList=p.nowPlay.value;
+      tmpList['index']=preHandler(p.nowPlay.value['index'], p.nowPlay.value['list'].length);
+      tmpList['id']=tmpList['list'][tmpList['index']]['id'];
+      tmpList['title']=tmpList['list'][tmpList['index']]['title'];
+      tmpList['artist']=tmpList['list'][tmpList['index']]['artist'];
+      tmpList['duration']=tmpList['list'][tmpList['index']]['duration'];
+      tmpList['album']=tmpList['list'][tmpList['index']]['album'];
+      tmpList['filePath']=tmpList['list'][tmpList['index']]['filePath'] ?? '';
+      p.nowPlay.value=tmpList;
+      p.nowPlay.refresh();
+      await play(fromSkip: true);
+    } catch (_) {}
+
+    isSettingUrl = false;
+    // setMedia(true);
+  }
+
+  int nextHandler(int index, int length){
+    if(p.playMode.value=='list'){
+      if(index==length-1){
+        return 0;
+      }
+      return index+1;
+    }else if(p.playMode.value=='random'){
+      if(length==1){
+        return 0;
+      }
+      Random random =Random();
+      return random.nextInt(length-1);
+    }else{
+      return index;
+    }
+  }
+
+  // 下一首
+  @override
+  Future<void> skipToNext() async {
+
+    if (isSettingUrl) return;
+    isSettingUrl = true;
+
+    if(p.nowPlay["id"].isEmpty){
+      return;
+    }
+    if(p.nowPlay['playFrom']=='fullRandom'){
+      await PlayerControl().shufflePlay();
+      isSettingUrl = false;
+      return;
+    }
+    try {
+      Map<String, dynamic> tmpList=p.nowPlay.value;
+      tmpList['index']=nextHandler(p.nowPlay.value['index'], p.nowPlay.value['list'].length);
+      tmpList['id']=tmpList['list'][tmpList['index']]['id'];
+      tmpList['title']=tmpList['list'][tmpList['index']]['title'];
+      tmpList['artist']=tmpList['list'][tmpList['index']]['artist'];
+      tmpList['duration']=tmpList['list'][tmpList['index']]['duration'];
+      tmpList['album']=tmpList['list'][tmpList['index']]['album'];
+      tmpList['filePath']=tmpList['list'][tmpList['index']]['filePath'] ?? '';
+      p.nowPlay.value=tmpList;
+      p.nowPlay.refresh();
+      await play(fromSkip: true);
+    } catch (_) {}
+
+    isSettingUrl = false;
+    // setMedia(true);
+  }
+
+  Future<void> volumeSet(int val) async {
+    await player.setVolume(val.toDouble());
+  }
+}

@@ -1,0 +1,207 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:netplayer_web/operations/play_check.dart';
+import 'package:netplayer_web/pages/components/album_item.dart';
+import 'package:netplayer_web/pages/components/artist_item.dart';
+import 'package:netplayer_web/pages/components/empty.dart';
+import 'package:netplayer_web/pages/components/multi_option.dart';
+import 'package:netplayer_web/pages/components/song_item.dart';
+import 'package:netplayer_web/pages/components/title_area.dart';
+import 'package:netplayer_web/variables/ls_var.dart';
+import 'package:netplayer_web/variables/player_var.dart';
+import 'package:netplayer_web/variables/settings_var.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
+
+class Loved extends StatefulWidget {
+  const Loved({super.key});
+
+  @override
+  State<Loved> createState() => _LovedState();
+}
+
+class _LovedState extends State<Loved> {
+  AutoScrollController controller=AutoScrollController();
+  bool showAppbarTitle=false;
+  final LsVar lsVar=Get.find();
+
+  bool loading=false;
+  String mode="song";
+
+  void changeMode(String val){
+    setState(() {
+      mode=val;
+    });
+  }
+
+  Future<void> getList(BuildContext context) async {
+    setState(() {
+      loading=true;
+    });
+
+    await PlayCheck().check(context);
+
+    Future.delayed(const Duration(milliseconds: 200), (){
+      setState(() {
+        loading=false;
+      });
+    });
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    controller.addListener((){
+      if(controller.offset>60){
+        setState(() {
+          showAppbarTitle=true;
+        });
+      }else{
+        setState(() {
+          showAppbarTitle=false;
+        });
+      }
+    });
+  }
+
+  PlayerVar pl=Get.find();
+  SettingsVar s=Get.find();
+
+  @override
+  void dispose(){
+    controller.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      s.selectList.clear();
+      s.selectMode.value=false;
+    });
+    super.dispose();
+  }
+
+  String subtitle(){
+    if(mode=="song"){
+      return '${lsVar.lovedSongs.length} ${"songsEnd".tr}';
+    }else if(mode=="artist"){
+      return '${lsVar.lovedArtists.length} ${"artistEnd".tr}';
+    }else if(mode=="album"){
+      return '${lsVar.lovedAlbums.length} ${"albumEnd".tr}';
+    }
+    return "";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(()=>
+      Scaffold(
+        backgroundColor: s.darkMode.value ? s.bgColor1 : Colors.grey[100],
+        appBar: AppBar(
+          backgroundColor: s.darkMode.value ? s.bgColor1 : Colors.grey[100],
+          scrolledUnderElevation:0.0,
+          toolbarHeight: 70,
+          centerTitle: false,
+          title: Align(
+            alignment: Alignment.centerLeft,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: showAppbarTitle ? Text('loved'.tr, key: const Key("1"),) : null,
+            ),
+          ),
+          actions: [
+            Obx(()=>
+              s.selectMode.value ? TextButton(
+                onPressed: (){
+                  s.selectMode.value=false;
+                  s.selectList.clear();
+                }, 
+                child: Text('unselect'.tr)
+              ) : IconButton(
+                onPressed: pl.nowPlay['playFrom']=='loved' && mode=="song" ? (){
+                  controller.scrollToIndex(pl.nowPlay['index'], preferPosition: AutoScrollPosition.middle);
+                } : null, 
+                icon: const Icon(
+                  Icons.my_location_rounded,
+                  size: 20,
+                )
+              ),
+            ),
+            Obx(
+              ()=> s.selectMode.value ? MultiOption(fromPlaylist: false, listId: "",) : IconButton(
+                onPressed: lsVar.lovedSongs.isEmpty ? null : (){
+                  Get.toNamed('/search-in', id: 1, arguments: {
+                    'ls': mode=='song' ? lsVar.lovedSongs : mode=='artist' ? lsVar.lovedArtists : lsVar.lovedAlbums, 
+                    'from': 'loved',
+                    'mode': mode,
+                    'listId': '',
+                  });
+                }, 
+                icon: const Icon(Icons.search_rounded, size: 22,)
+              ),
+            ),
+            const SizedBox(width: 10,)
+          ],
+        ),
+        body: AbsorbPointer(
+          absorbing: loading,
+          child: RefreshIndicator(
+            onRefresh: () => getList(context),
+            child: CupertinoScrollbar(
+              controller: controller,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                key: const Key('1'),
+                controller: controller,
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: LovedTitleArea(subtitle: subtitle(), changeMode: (value)=>changeMode(value), mode: mode),
+                  ),
+                  (mode=="song" ? lsVar.lovedSongs : mode=="artist" ? lsVar.lovedArtists : lsVar.lovedAlbums).isEmpty ? SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Container(
+                      color: s.darkMode.value ? s.bgColor2 : Colors.white,
+                      child: Empty()
+                    )
+                  ) : mode=="song" ? SliverList.builder(
+                    itemCount: lsVar.lovedSongs.length,
+                    itemBuilder: (context, index){
+                      return AutoScrollTag(
+                        key: ValueKey(index),
+                        index: index,
+                        controller: controller,
+                        child: SongItem(item: lsVar.lovedSongs[index], index: index, ls: lsVar.lovedSongs, from: 'loved', listId: '',),
+                      );
+                    }
+                  ) : mode=="artist" ? SliverList.builder(
+                    itemCount: lsVar.lovedArtists.length,
+                    itemBuilder: (context, index){
+                      return AutoScrollTag(
+                        key: ValueKey(index),
+                        index: index,
+                        controller: controller,
+                        child: ArtistItem(item: lsVar.lovedArtists[index], index: index,),
+                      );
+                    }
+                  ) : SliverList.builder(
+                    itemCount: lsVar.lovedAlbums.length,
+                    itemBuilder: (context, index){
+                      return AutoScrollTag(
+                        key: ValueKey(index),
+                        index: index,
+                        controller: controller,
+                        child: AlbumItem(item: lsVar.lovedAlbums[index], index: index),
+                      );
+                    }
+                  ),
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Container(
+                      color: s.darkMode.value ? s.bgColor2 : Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

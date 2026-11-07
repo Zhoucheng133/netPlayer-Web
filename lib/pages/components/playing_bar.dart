@@ -1,0 +1,21 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:netplayer_web/pages/components/playbar_content.dart';
+import 'package:netplayer_web/variables/player_var.dart';
+
+class PlayingBar extends StatefulWidget {
+  const PlayingBar({super.key});
+
+  @override
+  State<PlayingBar> createState() => _PlayingBarState();
+}
+
+class _PlayingBarState extends State<PlayingBar> {
+
+  PlayerVar p=Get.find();
+
+  @override
+  Widget build(BuildContext context) {
+      return PlaybarContent();
+  }
+}

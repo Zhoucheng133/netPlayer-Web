@@ -1,0 +1,453 @@
+import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
+import 'package:get/get.dart';
+import 'package:netplayer_web/operations/operations.dart';
+import 'package:netplayer_web/variables/dialog_var.dart';
+import 'package:netplayer_web/variables/settings_var.dart';
+import 'package:netplayer_web/variables/user_var.dart';
+import 'package:skeletons_forked/skeletons_forked.dart';
+
+class MenuItem extends StatefulWidget {
+
+  final bool isSet;
+  final String name;
+  final VoidCallback func;
+
+  const MenuItem({super.key, required this.isSet, required this.name, required this.func});
+
+  @override
+  State<MenuItem> createState() => _MenuItemState();
+}
+
+class _MenuItemState extends State<MenuItem> {
+
+  SettingsVar s=Get.find();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: (){
+        widget.func();
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Obx(()=>
+            Text(
+              widget.name,
+              style: TextStyle(
+                fontSize: 16,
+                color: s.darkMode.value ? widget.isSet ? Colors.white : Colors.grey[500] : widget.isSet ? Colors.black : Colors.grey[500]
+              ),
+            ),
+          ),
+          const SizedBox(height: 5,),
+          AnimatedOpacity(
+            opacity: widget.isSet ? 1 : 0,
+            duration: const Duration(milliseconds: 200),
+            child: Container(
+              width: 30,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(2)
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class IndexPinItem extends StatefulWidget {
+
+  final IconData icon;
+  final String label;
+  final Color bgColor;
+  final Color contentColor;
+  final VoidCallback func;
+
+  const IndexPinItem({super.key, required this.icon, required this.label, required this.bgColor, required this.contentColor, required this.func});
+
+  @override
+  State<IndexPinItem> createState() => _IndexPinItemState();
+}
+
+class _IndexPinItemState extends State<IndexPinItem> {
+
+  SettingsVar s=Get.find();
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      borderRadius: BorderRadius.circular(10),
+      clipBehavior: Clip.antiAlias,
+      color: widget.bgColor,
+      child: InkWell(
+        onTap: (){
+          widget.func();
+        },
+        child: SizedBox(
+          height: 200,
+          width: 150,
+          child: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: Center(
+                  child: Icon(
+                    widget.icon,
+                    size: 30,
+                    color: widget.contentColor,
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Obx(()=>
+                  Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: s.darkMode.value ? Colors.black.withAlpha(80) : Colors.white.withAlpha(80)
+                    ),
+                    child: Center(
+                      child: Text(
+                        widget.label,
+                        style: TextStyle(
+                          color: widget.contentColor,
+                          fontSize: 15
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PlayListItem extends StatefulWidget {
+
+  final String name;
+  final String id;
+  final int songCount;
+  final String? coverArt;
+  final int len;
+  final String created;
+  final String changed;
+
+  const PlayListItem({super.key, required this.name, required this.id, required this.songCount, required this.coverArt, required this.len, required this.created, required this.changed});
+
+  @override
+  State<PlayListItem> createState() => _PlayListItemState();
+}
+
+class _PlayListItemState extends State<PlayListItem> {
+
+  final UserVar u = Get.find();
+  final DialogVar d=Get.find();
+  final Operations operations=Operations();
+
+  Future<void> showAction(BuildContext context) async {
+    var req=await d.showActionSheet(
+      context: context,
+      list: [
+        ActionItem(name: 'renamePlayList'.tr, key: "rename", icon: Icons.edit_rounded),
+        ActionItem(name: 'deletePlayList'.tr, key: "del", icon: Icons.delete_rounded),
+        ActionItem(name: 'playListInfo'.tr, key: "info", icon: Icons.info_rounded)
+      ]
+    );
+    if(req=="rename"){
+      if(context.mounted){
+        final controller=TextEditingController();
+        await d.showOkCancelDialogRaw(
+          context: context, 
+          title: "renamePlayList".tr,
+          okText: "ok".tr,
+          cancelText: "cancel".tr,
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return FTextField(
+                control: .managed(controller: controller), autofocus: true,
+                hint: widget.name,
+              );
+            }
+          ),
+          okHandler: () async {
+            if(context.mounted){
+              await Operations().renamePlayList(widget.id, controller.text, context);
+            }
+          }
+        );
+      }
+    }else if(req=="del"){
+      if(context.mounted){
+        var req=await d.showOkCancelDialog(
+          context: context, 
+          title: "deletePlayList".tr,
+          content: "deleteConfirm".tr,
+          okText: "delete".tr,
+          cancelText: "cancel".tr,
+        );
+        if(req){
+          if(context.mounted){
+            Operations().delPlayList(widget.id, context);
+          }
+        }
+      }
+    }else if(req=="info"){
+      if(context.mounted){
+        d.showOkDialogRaw(
+          context: context, 
+          title: "playListInfo".tr, 
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 150,
+                height: 150,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    operations.coverLink(widget.coverArt??""),
+                    width: 150,
+                    height: 150,
+                    frameBuilder:(context, child, frame, wasSynchronouslyLoaded){
+                      if (wasSynchronouslyLoaded) {
+                        return child;
+                      }
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: frame != null ? child : SkeletonAvatar(
+                          style: SkeletonAvatarStyle(
+                            width: 150,
+                            height: 150,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10,),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      "playlistName".tr,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      widget.name,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  )
+                ],
+              ),
+              const SizedBox(height: 5,),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      "songCount".tr,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      "${widget.songCount} ${'songsEnd'.tr}",
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  )
+                ],
+              ),
+              const SizedBox(height: 5,),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      "allDuration".tr,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      operations.convertDuration(widget.len),
+                      maxLines: 2,
+                    )
+                  )
+                ],
+              ),
+              const SizedBox(height: 5,),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      "playlistId".tr,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      widget.id,
+                      maxLines: 2,
+                    )
+                  )
+                ],
+              ),
+              const SizedBox(height: 5,),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      "created".tr,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      operations.formatIsoString(widget.created),
+                      maxLines: 2,
+                    )
+                  )
+                ],
+              ),
+              const SizedBox(height: 5,),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      "modified".tr,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      operations.formatIsoString(widget.changed),
+                      maxLines: 2,
+                    )
+                  )
+                ],
+              ),
+            ],
+          )
+        );
+      }
+    }
+  }
+
+  SettingsVar s=Get.find();
+  
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: (){
+        Get.toNamed('/playlist', id: 1, arguments: {
+          'id': widget.id,
+          'name': widget.name,
+          'songCount': widget.songCount,
+        });
+      },
+      onLongPress: ()=>showAction(context),
+      child: SizedBox(
+        height: 60,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 20, right: 10),
+          child: Obx(
+            ()=> Row(
+              children: [
+                if(s.showPlaylistCover.value) Padding(
+                  padding: const EdgeInsets.only(right: 5),
+                  child: Container(
+                    height: 50,
+                    width: 50,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    clipBehavior: Clip.hardEdge,
+                    child: Stack(
+                      children: [
+                        const Center(child: SkeletonAvatar()),
+                        if(u.url.value.isNotEmpty) Image.network(
+                          operations.coverLink(widget.coverArt??""),
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress){
+                            if(loadingProgress==null){
+                              return Container(
+                                color: s.darkMode.value ? s.bgColor2 : Colors.white,
+                                child: child
+                              );
+                            }else{
+                              return const SizedBox();
+                            }
+                          },
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 5,),
+                Expanded(
+                  child: Container(
+                    color: Colors.transparent,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          widget.name,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          "${widget.songCount} ${'songsEnd'.tr}",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+                ),
+                IconButton(
+                  onPressed: ()=>showAction(context), 
+                  icon: const Icon(
+                    Icons.more_vert_rounded,
+                    size: 20,
+                  )
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
-import 'package:netplayer_web/variables/download_var.dart';
 import 'package:netplayer_web/operations/operations.dart';
 import 'package:netplayer_web/operations/player_control.dart';
 import 'package:netplayer_web/pages/album_content.dart';
@@ -36,7 +35,6 @@ class _SongItemState extends State<SongItem> {
   SettingsVar s=Get.find();
   UserVar u=Get.find();
   final DialogVar d=Get.find();
-  final DownloadVar downloadVar=Get.find();
   final Operations operations=Operations();
 
   bool playing(){
@@ -55,27 +53,7 @@ class _SongItemState extends State<SongItem> {
     return false;
   }
 
-  bool downloaded(){
-    return downloadVar.downloadList.any(
-      (item) => item.id == widget.item['id'] && item.percent==100,
-    );
-  }
 
-  bool downloading(){
-    return downloadVar.downloadList.any(
-      (item) => item.id == widget.item['id'] && item.percent!=100,
-    );
-  }
-
-  String percent(){
-    int index=downloadVar.downloadList.indexWhere(
-      (item) => item.id == widget.item['id'],
-    );
-    if(index==-1){
-      return "0 %";
-    }
-    return "${downloadVar.downloadList[index].percent} %";
-  }
 
   Future<void> showSongMenu(BuildContext context) async {
     var req=await d.showActionSheet(
@@ -87,7 +65,6 @@ class _SongItemState extends State<SongItem> {
         ActionItem(name: "showAlbum".tr, key: "album", icon: Icons.album_rounded),
         ActionItem(name: "showArtist".tr, key: "artist", icon: Icons.mic_rounded),
         if(widget.from=="playlist") ActionItem(name: "removeFromPlaylist".tr, key: "delist", icon: Icons.playlist_remove_rounded, ),
-        if(!downloadVar.isDownloaded(widget.item['id'])) ActionItem(name: "download".tr, key: "download", icon: Icons.download_rounded),
         ActionItem(name: "songInfo".tr, key: "info", icon: Icons.info_rounded),
       ]
     );
@@ -353,8 +330,6 @@ class _SongItemState extends State<SongItem> {
           )
         );
       }
-    }else if(req=='download'){
-      downloadVar.downloadSongFromId(widget.item['id']);
     }
   }
 
@@ -432,38 +407,7 @@ class _SongItemState extends State<SongItem> {
                                 size: 15,
                               ),
                             ) : Container(),
-                            downloaded() ? const Padding(
-                              padding: EdgeInsets.only(right: 5),
-                              child: Icon(
-                                Icons.check_circle_rounded,
-                                color: Colors.green,
-                                size: 15,
-                              ),
-                            ) : downloading() ? Padding(
-                              padding: EdgeInsets.only(right: 5),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 10,
-                                    height: 10,
-                                    child: const CircularProgressIndicator(
-                                      strokeWidth: 1,
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5,),
-                                  Text(
-                                    percent(),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.blue
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ) : Container(),
+
                             Expanded(
                               child: Text(
                                 widget.item['artist'],

@@ -5,24 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netplayer_web/service/handler.dart';
 
-class LyricItem{
-  String lyric;
-  String translate;
-  int time;
-  LyricItem(this.lyric, this.translate, this.time);
-
-  Map toJson()=>{
-    "lyric": lyric,
-    "translate": translate,
-    "time": time,
-  };
-}
-
-enum LyricSource{
-  netease,
-  lrclib
-}
-
 class PlayerVar extends GetxController with GetTickerProviderStateMixin{
 
   late AnimationController playbtnController;
@@ -41,8 +23,6 @@ class PlayerVar extends GetxController with GetTickerProviderStateMixin{
       ),
     );
   }
-
-  Rx<LyricSource?> lyricSource=Rx<LyricSource?>(null);
 
   RxMap<String, dynamic> nowPlay={
     'id': '',
@@ -64,10 +44,6 @@ class PlayerVar extends GetxController with GetTickerProviderStateMixin{
   // RxBool fullRandom=false.obs;
   // 播放进度, 注意单位为毫秒~1000ms=1s
   RxInt playProgress=0.obs;
-  // 歌词内容
-  RxList<LyricItem> lyric=<LyricItem>[].obs;
-  // 当前歌词到多少行了
-  RxInt lyricLine=0.obs;
   // 正在播放
   RxBool isPlay=false.obs;
 

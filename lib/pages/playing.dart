@@ -10,7 +10,6 @@ import 'package:netplayer_web/pages/components/empty_cover.dart';
 import 'package:netplayer_web/pages/components/play_queue.dart';
 import 'package:netplayer_web/pages/components/title_area.dart';
 import 'package:netplayer_web/variables/dialog_var.dart';
-import 'package:netplayer_web/variables/download_var.dart';
 import 'package:netplayer_web/variables/ls_var.dart';
 import 'package:netplayer_web/variables/player_var.dart';
 import 'package:netplayer_web/variables/settings_var.dart';
@@ -18,7 +17,6 @@ import 'package:netplayer_web/variables/user_var.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeletons_forked/skeletons_forked.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 
 class Playing extends StatefulWidget {
   const Playing({super.key});
@@ -33,7 +31,6 @@ class _PlayingState extends State<Playing> with SingleTickerProviderStateMixin {
   LsVar l=Get.find();
   final DialogVar d=Get.find();
   final Operations operations=Operations();
-  final DownloadVar downloadVar=Get.find();
 
   bool isLoved(){
     for (var val in l.lovedSongs) {
@@ -69,57 +66,10 @@ class _PlayingState extends State<Playing> with SingleTickerProviderStateMixin {
     return "$min:$formattedSec";
   }
 
-  bool showlyric=false;
-  late Worker lyricLineListener;
-
-  bool playedLyric(int index){
-    if(p.lyric.length==1){
-      return true;
-    }
-    bool flag=false;
-    try {
-      flag=p.playProgress.value>=p.lyric[index].time && p.playProgress<p.lyric[index+1].time;
-    } catch (_) {
-      if(p.lyric.length==index+1 && p.playProgress.value>=p.lyric[index].time){
-        flag=true;
-      }else{
-        flag=false;
-      }
-    }
-    return flag;
-  }
-
-  late Size lyricSize;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      scrollLyric();
-      lyricLineListener=ever(p.lyricLine, (val){
-        scrollLyric();
-      });
-    });
-  }
-
   @override
   void dispose(){
-    WakelockPlus.disable();
     controller.dispose();
     super.dispose();
-  }
-
-  void scrollLyric(){
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!controller.hasClients || !showlyric || p.lyric.length==1) {
-        return;
-      }
-      if(p.lyricLine.value==0){
-        controller.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-        return;
-      }
-      controller.scrollToIndex(p.lyricLine.value-1, preferPosition: AutoScrollPosition.middle);
-    });
   }
 
   AutoScrollController controller=AutoScrollController();
@@ -165,16 +115,6 @@ class _PlayingState extends State<Playing> with SingleTickerProviderStateMixin {
   }
 
   SettingsVar s=Get.find();
-
-  void wakeLockHandler(){
-    if(s.wakeLockLyric.value){
-      if(showlyric){
-        WakelockPlus.enable();
-      }else{
-        WakelockPlus.disable();
-      }
-    }
-  }
 
   double coverSize(BuildContext context){
     if(MediaQuery.of(context).size.width<MediaQuery.of(context).size.height){
@@ -233,153 +173,50 @@ class _PlayingState extends State<Playing> with SingleTickerProviderStateMixin {
                   showLoved: isLoved(),
                 )),
                 Expanded(
-                  child: GestureDetector(
-                    onTap: (){
-                      if(s.enableLyric.value){
-                        setState(() {
-                          showlyric=!showlyric;
-                          if(showlyric){
-                            scrollLyric();
-                          }
-                          wakeLockHandler();
-                        });
-                      }
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        color: Colors.transparent,
-                      ),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 200),
-                        child: showlyric ? Container(
-                          key: const Key("0"),
-                          color: Colors.transparent,
-                          child: Stack(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 30, right: 30, top: 0, bottom: 0),
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    final double topBottomHeight = constraints.maxHeight / 2;
-                                    return Obx(()=>
-                                      p.lyric.length==1 ? Center(
-                                        child: Text(
-                                          p.lyric[0].lyric,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontSize: p.fontSize.value.toDouble(),
-                                            height: 2.5,
-                                            color: playedLyric(0) ? Colors.blue:Colors.grey[400],
-                                            fontWeight: playedLyric(0) ? FontWeight.bold: FontWeight.normal,
-                                          ),
-                                        ),
-                                      ) : ListView.builder(
-                                        controller: controller,
-                                        itemCount: p.lyric.length,
-                                        itemBuilder: (BuildContext context, int index)=>Column(
-                                          children: [
-                                            index==0 ?  SizedBox(height: topBottomHeight-10,) :Container(),
-                                            Obx(() => 
-                                              AutoScrollTag(
-                                                key: ValueKey(index), 
-                                                controller: controller, 
-                                                index: index,
-                                                child: Padding(
-                                                  padding: const EdgeInsets.symmetric(vertical: 7),
-                                                  child: Column(
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    children: [
-                                                      Text(
-                                                        p.lyric[index].lyric,
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: p.fontSize.value.toDouble(),
-                                                          color: playedLyric(index) ? Colors.blue:Colors.grey[400],
-                                                          fontWeight: playedLyric(index) ? FontWeight.bold: FontWeight.normal,
-                                                        ),
-                                                      ),
-                                                      if(p.lyric[index].translate.isNotEmpty && s.showTranslation.value) Text(
-                                                        p.lyric[index].translate,
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: p.fontSize.value.toDouble() * 0.85,
-                                                          color: playedLyric(index) ? Colors.blue:Colors.grey[400],
-                                                          fontWeight: playedLyric(index) ? FontWeight.bold: FontWeight.normal,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              )
-                                            ),
-                                            index==p.lyric.length-1 ? SizedBox(height: topBottomHeight-10,) : Container(),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                ),
-                              ),
-                              Obx(()=>
-                                p.lyricSource.value==null ? Container() : Positioned(
-                                  right: 20,
-                                  bottom: 10,
-                                  child: Tooltip(
-                                    preferBelow: false,
-                                    message: "${'lyricFrom'.tr} ${p.lyricSource.value==LyricSource.netease ? 'netease'.tr : 'lrclib.net'}\n${'lyricForReference'.tr}",
-                                    triggerMode: TooltipTriggerMode.tap,
-                                    child: Icon(
-                                      Icons.info_rounded,
-                                      color: Colors.grey[500],
-                                    ),
-                                  ),
-                                )
-                              )
-                            ],
-                          ),
-                        ) : Obx(()=>
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Hero(
-                                tag: 'cover',
-                                child: SizedBox(
-                                  width: coverSize(context),
-                                  height: coverSize(context),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: p.nowPlay['id'].isEmpty ? EmptyCover() : p.nowPlay['playFrom']=='download' && p.cover.value!=null ? Image.memory(
-                                      p.cover.value!,
-                                      fit: BoxFit.contain,
-                                    ) : Image.network(
-                                      operations.coverLink(p.nowPlay["id"]),
-                                      fit: BoxFit.contain,
-                                      frameBuilder:(context, child, frame, wasSynchronouslyLoaded){
-                                        if (wasSynchronouslyLoaded) {
-                                          return child;
-                                        }
-                                        return AnimatedSwitcher(
-                                          duration: const Duration(milliseconds: 200),
-                                          child: frame != null ? child : SkeletonAvatar(
-                                            style: SkeletonAvatarStyle(
-                                              width: coverSize(context),
-                                              height: coverSize(context),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
+                  child: Container(
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      color: Colors.transparent,
                     ),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Obx(()=>
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Hero(
+                              tag: 'cover',
+                              child: SizedBox(
+                                width: coverSize(context),
+                                height: coverSize(context),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: p.nowPlay['id'].isEmpty ? EmptyCover() : Image.network(
+                                    operations.coverLink(p.nowPlay["id"]),
+                                    fit: BoxFit.contain,
+                                    frameBuilder:(context, child, frame, wasSynchronouslyLoaded){
+                                      if (wasSynchronouslyLoaded) {
+                                        return child;
+                                      }
+                                      return AnimatedSwitcher(
+                                        duration: const Duration(milliseconds: 200),
+                                        child: frame != null ? child : SkeletonAvatar(
+                                          style: SkeletonAvatarStyle(
+                                            width: coverSize(context),
+                                            height: coverSize(context),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
                   )
                 ),
                 Obx(()=>
@@ -576,9 +413,6 @@ class _PlayingState extends State<Playing> with SingleTickerProviderStateMixin {
                                       ActionItem(name: 'addToLoved'.tr, key: 'love', icon: Icons.favorite_rounded),
                                       ActionItem(name: 'nowPlayList'.tr, key: 'queue', icon: Icons.playlist_play_rounded),
                                       ActionItem(name: 'addTo...'.tr, key: 'add', icon: Icons.playlist_add_rounded),
-                                      if(s.enableLyric.value) ActionItem(name: showlyric ? 'hideLyric'.tr : 'showLyric'.tr, key: 'lyric', icon: Icons.lyrics_rounded),
-                                      ActionItem(name: 'lyricFontSize'.tr, key: 'font', icon: Icons.text_fields_rounded),
-                                      if(p.nowPlay['playFrom']!='download' && !downloadVar.isDownloaded(p.nowPlay['id'])) ActionItem(name: 'download'.tr, key: 'download', icon: Icons.download_rounded),
                                       ActionItem(name: 'songInfo'.tr, key: 'info', icon: Icons.info_rounded),
                                     ]
                                   );
@@ -593,17 +427,6 @@ class _PlayingState extends State<Playing> with SingleTickerProviderStateMixin {
                                         return;
                                       }
                                       operations.love(p.nowPlay['id'], context);
-                                    }else if(rlt=='lyric'){
-                                      if(p.nowPlay["id"].isEmpty){
-                                        return;
-                                      }
-                                      setState(() {
-                                        showlyric=!showlyric;
-                                      });
-                                      if(showlyric){
-                                        scrollLyric();
-                                      }
-                                      wakeLockHandler();
                                     }else if(rlt=='add'){
                                       if(l.playList.isEmpty && context.mounted){
                                         d.showOkDialog(context: context, title: "cantAddToPlaylist".tr, content: "noPlaylist".tr);
@@ -662,14 +485,6 @@ class _PlayingState extends State<Playing> with SingleTickerProviderStateMixin {
                                       if(data['artistId']!=null && data['artist']!=null){
                                         Get.to(()=>ArtistContent(id: data['artistId'], artist: data['artist'], showPlayingBar: true));
                                       }
-                                    }else if(rlt=='font'){
-                                      if(!showlyric){
-                                        setState(() {
-                                          showlyric=true;
-                                          scrollLyric();
-                                        });
-                                      }
-                                      operations.resizeFont(context);
                                     }else if(rlt=='info'){
                                       if(p.nowPlay["id"].isEmpty){
                                         return;
@@ -685,12 +500,7 @@ class _PlayingState extends State<Playing> with SingleTickerProviderStateMixin {
                                               height: 150,
                                               child: ClipRRect(
                                                 borderRadius: BorderRadius.circular(10),
-                                                child: p.nowPlay['id'].isEmpty ? EmptyCover() : p.nowPlay['playFrom']=='download' && p.cover.value!=null ? Image.memory(
-                                                  p.cover.value!,
-                                                  fit: BoxFit.contain,
-                                                  width: 150,
-                                                  height: 150,
-                                                ) : Image.network(
+                                                child: p.nowPlay['id'].isEmpty ? EmptyCover() : Image.network(
                                                   operations.coverLink(p.nowPlay["id"]),
                                                   fit: BoxFit.contain,
                                                   frameBuilder:(context, child, frame, wasSynchronouslyLoaded){
@@ -844,8 +654,6 @@ class _PlayingState extends State<Playing> with SingleTickerProviderStateMixin {
                                         context: context,
                                         builder: (BuildContext context)=>const PlayQueue()
                                       );
-                                    }else if(rlt=='download'){
-                                      downloadVar.downloadSongFromId(p.nowPlay['id']);
                                     }
                                   }
                                 }, 

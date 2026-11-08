@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -17,22 +15,16 @@ import 'package:netplayer_web/lang/pt_pt.dart';
 import 'package:netplayer_web/lang/fr_fr.dart';
 import 'package:netplayer_web/main_view.dart';
 import 'package:netplayer_web/variables/dialog_var.dart';
-import 'package:netplayer_web/variables/download_var.dart';
+
 import 'package:netplayer_web/variables/ls_var.dart';
 import 'package:netplayer_web/variables/page_var.dart';
 import 'package:netplayer_web/variables/player_var.dart';
 import 'package:netplayer_web/variables/settings_var.dart';
 import 'package:netplayer_web/variables/user_var.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if(Platform.isAndroid){
-    if (await Permission.notification.isDenied) {
-      await Permission.notification.request();
-    }
-  }
   SharedPreferences prefs = await SharedPreferences.getInstance();
   final darkMode=prefs.getBool("darkMode");
   final autoDark=prefs.getBool("autoDark");
@@ -43,8 +35,6 @@ Future<void> main() async {
   Get.put(PageVar());
   Get.put(UserVar());
   await p.initPlayer();
-  final DownloadVar downloadVar = Get.put(DownloadVar());
-  downloadVar.getDownloadList();
   s.initDark(autoDark, darkMode);
   await s.initLang();
   runApp(const MainApp());
@@ -76,41 +66,6 @@ class MainTranslations extends Translations {
 class _MainAppState extends State<MainApp> {
 
   final SettingsVar s=Get.find();
-  
-  bool? phoneLike;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    final size = MediaQuery.sizeOf(context);
-    final shortestSide = size.shortestSide;
-
-    final isPhoneLike = shortestSide < 600;
-
-    if (phoneLike != isPhoneLike) {
-      phoneLike = isPhoneLike;
-      applyOrientation(isPhoneLike);
-    }
-  }
-
-  Future<void> applyOrientation(bool isPhoneLike) async {
-    try{
-      if(phoneLike==true){
-        await SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]);
-      }else if(Platform.isAndroid){
-        await SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-          DeviceOrientation.landscapeLeft,
-          DeviceOrientation.landscapeRight
-        ]);
-      }
-    }catch(_){}
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +97,7 @@ class _MainAppState extends State<MainApp> {
             colors: s.darkMode.value ? FThemes.zinc.dark.colors : FThemes.zinc.light.colors,
             typography: FTypography(
               defaultFontFamily: "PuHui"
-            ) 
+            )
           ),
           child: DefaultTextHeightBehavior(
             textHeightBehavior: const TextHeightBehavior(

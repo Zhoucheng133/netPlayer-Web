@@ -5,7 +5,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netplayer_web/operations/data_get.dart';
-import 'package:netplayer_web/operations/lyric_get.dart';
 import 'package:netplayer_web/operations/play_check.dart';
 import 'package:netplayer_web/operations/requests.dart';
 import 'package:netplayer_web/variables/ls_var.dart';
@@ -20,7 +19,6 @@ class Operations{
   UserVar u = Get.find();
   LsVar l=Get.find();
   PlayerVar p=Get.find();
-  LyricGet lyricGet=LyricGet();
   SettingsVar s=Get.find();
 
   Future<void> renamePlayList(String id, String newname, BuildContext context) async {
@@ -209,13 +207,6 @@ class Operations{
 
     // 将分钟、秒和毫秒转换为总毫秒数
     return (minutes * 60 * 1000) + (seconds * 1000) + milliseconds;
-  }
-
-  Future<void> getLyric() async {
-    if(p.nowPlay['id']==""){
-      return;
-    }
-    lyricGet.getLyric();
   }
 
   Future<Map> search(String val, BuildContext context) async {

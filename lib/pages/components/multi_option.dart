@@ -3,7 +3,6 @@ import 'package:forui/forui.dart';
 import 'package:get/get.dart';
 import 'package:netplayer_web/operations/operations.dart';
 import 'package:netplayer_web/variables/dialog_var.dart';
-import 'package:netplayer_web/variables/download_var.dart';
 import 'package:netplayer_web/variables/ls_var.dart';
 import 'package:netplayer_web/variables/settings_var.dart';
 
@@ -11,10 +10,9 @@ class MultiOption extends StatefulWidget {
 
   final bool fromPlaylist;
   final String listId;
-  final bool fromDownload;
   final List target;
 
-  const MultiOption({super.key, required this.fromPlaylist, required this.listId, this.fromDownload=false, this.target=const []});
+  const MultiOption({super.key, required this.fromPlaylist, required this.listId, this.target=const []});
 
   @override
   State<MultiOption> createState() => _MultiOptionState();
@@ -25,40 +23,12 @@ class _MultiOptionState extends State<MultiOption> {
   DialogVar d=Get.find();
   LsVar l=Get.find();
   final SettingsVar s=Get.find();
-  DownloadVar downloadVar=Get.find();
-
-  Future<void> showDownloadOption(BuildContext context) async {
-    var req=await d.showActionSheet(
-      context: context,
-      list: [
-        ActionItem(name: 'delete'.tr, key: "delete", icon: Icons.delete_rounded),
-      ]
-    );
-
-    if(req=="delete"){
-      if(context.mounted){
-        final confirm=await d.showOkCancelDialog(
-          context: context, 
-          title: 'deleteTheseSongs'.tr, 
-          content: 'deleteTheseSongsContent'.tr,
-          okText: 'delete'.tr
-        );
-        if(confirm){
-          for(var element in widget.target) {
-            await downloadVar.delete(element);
-          }
-          s.selectMode.value=false;
-        }
-      }
-    }
-  }
 
   Future<void> showOption(BuildContext context) async {
     var req=await d.showActionSheet(
       context: context,
       list: [
         ActionItem(name: 'addToPlaylist'.tr, key: "add", icon: Icons.playlist_add_rounded),
-        ActionItem(name: "download".tr, key: "download", icon: Icons.download_rounded),
       ]
     );
 
@@ -102,18 +72,13 @@ class _MultiOptionState extends State<MultiOption> {
         );
       }
       s.selectMode.value = false;
-    }else if(req=="download"){
-      for (var element in s.selectList) {
-        downloadVar.downloadSongFromId(element);
-      }
-      s.selectMode.value = false;
     }
   }
   
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      onPressed: ()=>widget.fromDownload ? showDownloadOption(context) : showOption(context), 
+      onPressed: ()=>showOption(context), 
       icon: Icon(Icons.more_vert_rounded)
     );
   }

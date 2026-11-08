@@ -9,7 +9,7 @@ import 'package:netplayer_web/operations/account.dart';
 import 'package:netplayer_web/operations/data_get.dart';
 import 'package:netplayer_web/operations/operations.dart';
 import 'package:netplayer_web/operations/play_check.dart';
-import 'package:netplayer_web/pages/download.dart';
+
 import 'package:netplayer_web/pages/index.dart';
 import 'package:netplayer_web/pages/login.dart';
 import 'package:netplayer_web/variables/dialog_var.dart';
@@ -78,14 +78,6 @@ class _MainViewState extends State<MainView> {
       }
 
       await savePlay({...val});
-      if(p.nowPlay["id"]!=null && p.nowPlay["id"]!=""){
-        p.lyric.value=[
-          LyricItem('searchingForLyrics'.tr, "", 0)
-        ];
-      }
-      if(s.enableLyric.value){
-        operations.getLyric();
-      }
     });
   }
 
@@ -119,17 +111,13 @@ class _MainViewState extends State<MainView> {
         return true;
       }else{
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          final req=await dialog.showOkCancelDialog(
+          await dialog.showOkCancelDialog(
             context: context, 
             title: 'autoLoginFailed'.tr, 
             content: resp['data'],
             okText: 'ok'.tr,
-            cancelText: "downloaded".tr
+            cancelText: 'cancel'.tr
           );
-          if(!req){
-            s.enableLyric.value=false;
-            Get.off(()=>Download(showPlayingBar: true,));
-          }
         });
         return false;
       }
@@ -147,9 +135,6 @@ class _MainViewState extends State<MainView> {
     if(nowPlay!=null){
       Map<String, dynamic> decodedMap = jsonDecode(nowPlay);
       Map<String, Object> tmpList=Map<String, Object>.from(decodedMap);
-      if(tmpList['playFrom']=="download"){
-        return;
-      }
       p.nowPlay.value={...tmpList, 'list': []} as Map<String, dynamic>;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         PlayCheck().check(context);
@@ -188,24 +173,10 @@ class _MainViewState extends State<MainView> {
 
   late StreamSubscription<List<ConnectivityResult>> subscription;
 
-  void lyricSet(){
-    final fontSize=prefs.getInt('fontSize');
-    if(fontSize!=null){
-      p.fontSize.value=fontSize;
-    }
-  }
-
   void progressSet(){
     final style=prefs.getInt('progressStyle');
     if(style!=null){
       s.progressStyle.value=ProgressStyle.values[style];
-    }
-  }
-
-  void translateSet(){
-    final showTranslation=prefs.getBool('showTranslation');
-    if(showTranslation!=null){
-      s.showTranslation.value=showTranslation;
     }
   }
 
@@ -255,17 +226,13 @@ class _MainViewState extends State<MainView> {
         });
         return;
       }
-      if(context.mounted) await s.initLyric(context);
     }
-    s.wakeLockLyric.value=prefs.getBool('wakeLockLyric')??true;
     s.showPlaylistCover.value=prefs.getBool('showPlaylistCover')??true;
     s.resizeCoverImg.value=prefs.getBool('resizeCoverImg')??false;
     if(await loginCheck()){
       nowPlaySet();
       qualitySet();
       progressSet();
-      lyricSet();
-      translateSet();
     }
     subscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> result) {
       if(result.contains(ConnectivityResult.mobile)){

@@ -1,12 +1,10 @@
 // ignore_for_file: invalid_use_of_protected_member
 
-import 'dart:io';
 import 'dart:math';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:netplayer_web/operations/operations.dart';
@@ -15,7 +13,7 @@ import 'package:netplayer_web/operations/seek_check.dart';
 import 'package:netplayer_web/variables/player_var.dart';
 import 'package:netplayer_web/variables/settings_var.dart';
 import 'package:netplayer_web/variables/user_var.dart';
-import 'package:path_provider/path_provider.dart';
+
 
 class Handler extends BaseAudioHandler with QueueHandler, SeekHandler {
 
@@ -73,22 +71,6 @@ class Handler extends BaseAudioHandler with QueueHandler, SeekHandler {
       if(!p.onSlide.value){
         p.playProgress.value=data;
       }
-      if(p.lyric.isNotEmpty && p.lyric.length!=1){
-        for (var i = 0; i < p.lyric.length; i++) {
-          if(i==p.lyric.length-1){
-            p.lyricLine.value=p.lyric.length;
-            break;
-          }else if(i==0 && data<p.lyric[i].time){
-            p.lyricLine.value=0;
-            break;
-          }else if(data>=p.lyric[i].time && data<p.lyric[i+1].time){
-            p.lyricLine.value=i+1;
-            break;
-          }
-        }
-      }else if(p.lyric.length==1){
-        p.lyricLine.value=0;
-      }
     });
     player.durationStream.listen((duration) {
       if(p.nowPlay["duration"]==0){
@@ -127,28 +109,11 @@ class Handler extends BaseAudioHandler with QueueHandler, SeekHandler {
       title: p.nowPlay["title"],
       artist: p.nowPlay["artist"],
       artUri: p.nowPlay['id'].isEmpty ? null :
-      p.nowPlay['playFrom']=='download' ? await getCoverFromFile() :
-      //  Uri.parse("${u.url.value}/rest/getCoverArt?v=1.12.0&c=netPlayer&f=json&u=${u.username.value}&t=${u.token.value}&s=${u.salt.value}&id=${p.nowPlay["id"]}"),
       Uri.parse(operations.coverLink(p.nowPlay["id"])),
       album: p.nowPlay["album"],
       duration: Duration(seconds: p.nowPlay['duration']),
     );
     mediaItem.add(item);
-  }
-
-  Future<Uri?> getCoverFromFile() async {
-    if(p.cover.value==null){
-      return null;
-    }
-    try {
-      final tempDir = await getTemporaryDirectory();
-      final file = File('${tempDir.path}/${p.nowPlay["id"]}.png');
-
-      await file.writeAsBytes(p.cover.value!);
-      return file.uri;
-    } catch (e) {
-      return null;
-    }
   }
 
   // 播放
@@ -157,52 +122,25 @@ class Handler extends BaseAudioHandler with QueueHandler, SeekHandler {
     if(p.nowPlay["id"].isEmpty){
       return;
     }
-    if(p.nowPlay['playFrom']=='download'){
-      final filePath=p.nowPlay['filePath'];
-      if(filePath!=null){
-        final track = File(filePath);
-        final metadata = readMetadata(track, getImage: true);
-        if(metadata.pictures.isNotEmpty && !listEquals(metadata.pictures[0].bytes, p.cover.value)){
-          p.cover.value=metadata.pictures[0].bytes;
-        }
+    var url=seekCheck.enableSeek() ? "${u.url.value}/rest/stream?v=1.12.0&c=netPlayer&f=json&u=${u.username.value}&t=${u.token.value}&s=${u.salt.value}&id=${p.nowPlay["id"]}"
+    : "${u.url.value}/rest/stream?v=1.12.0&c=netPlayer&f=json&u=${u.username.value}&t=${u.token.value}&s=${u.salt.value}&id=${p.nowPlay["id"]}&maxBitRate=${s.quality.value.quality}";
+    if(url!=playURL){
+      p.buffering.value=true;
+      try {
+        await player.setUrl(url);
+      } catch (_) {
+        await skipToNext();
       }
-      if(filePath!=playURL){
-        try {
-          await player.setFilePath(filePath);
-        } catch (_) {
-          await skipToNext();
-        }
-      } else if(fromSkip) {
-        await player.seek(Duration.zero);
-      }
-      player.play();
-      playURL=filePath;
-      if(bindMedia){
-        setMedia(true);
-      }
-      // p.isPlay.value=true;
-      p.isPlaySetter(true);
-    }else{
-      var url=seekCheck.enableSeek() ? "${u.url.value}/rest/stream?v=1.12.0&c=netPlayer&f=json&u=${u.username.value}&t=${u.token.value}&s=${u.salt.value}&id=${p.nowPlay["id"]}"
-      : "${u.url.value}/rest/stream?v=1.12.0&c=netPlayer&f=json&u=${u.username.value}&t=${u.token.value}&s=${u.salt.value}&id=${p.nowPlay["id"]}&maxBitRate=${s.quality.value.quality}";
-      if(url!=playURL){
-        p.buffering.value=true;
-        try {
-          await player.setUrl(url);
-        } catch (_) {
-          await skipToNext();
-        }
-      }else if(fromSkip) {
-        await player.seek(Duration.zero);
-      }
-      player.play();
-      playURL=url;
-      if(bindMedia){
-        setMedia(true);
-      }
-      // p.isPlay.value=true;
-      p.isPlaySetter(true);
+    }else if(fromSkip) {
+      await player.seek(Duration.zero);
     }
+    player.play();
+    playURL=url;
+    if(bindMedia){
+      setMedia(true);
+    }
+    // p.isPlay.value=true;
+    p.isPlaySetter(true);
   }
 
   // 暂停

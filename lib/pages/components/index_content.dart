@@ -8,7 +8,6 @@ import 'package:netplayer_web/operations/player_control.dart';
 import 'package:netplayer_web/pages/about.dart';
 import 'package:netplayer_web/pages/components/empty.dart';
 import 'package:netplayer_web/pages/components/index_item.dart';
-import 'package:netplayer_web/pages/remote.dart';
 import 'package:netplayer_web/pages/settings.dart';
 import 'package:netplayer_web/pages/skeletons/playlist_skeleton.dart';
 import 'package:netplayer_web/variables/dialog_var.dart';
@@ -129,8 +128,6 @@ class _IndexContentState extends State<IndexContent> {
                     if(context.mounted){
                       logout(context);
                     }
-                  }else if(rlt=='remote'){
-                    Get.to(()=>const Remote());
                   }
                 }
               }, 
@@ -198,7 +195,6 @@ class _IndexContentState extends State<IndexContent> {
                                 const SizedBox(width: 10,),
                                 IndexPinItem(icon: Icons.favorite_rounded, label: 'loved'.tr, bgColor: s.darkMode.value ? s.bgColor1 : Colors.red[50]!, contentColor: Colors.red, func: ()=>Get.toNamed("/loved", id: 1),),
                                 const SizedBox(width: 10,),
-                                IndexPinItem(icon: Icons.download_rounded, label: 'downloaded'.tr, bgColor: s.darkMode.value ? s.bgColor1 : Colors.blue[50]!, contentColor: Colors.blue, func: ()=>Get.toNamed('/download', id: 1),),
                                 const SizedBox(width: 10,),
                                 IndexPinItem(icon: Icons.mic_rounded, label: 'artists'.tr, bgColor: s.darkMode.value ? s.bgColor1 : Colors.blue[50]!, contentColor: Colors.blue, func: ()=>Get.toNamed('/artists', id: 1),),
                                 const SizedBox(width: 10,),

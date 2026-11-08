@@ -7,7 +7,7 @@ import 'package:netplayer_web/pages/artist_content.dart';
 import 'package:netplayer_web/pages/artists.dart';
 import 'package:netplayer_web/pages/components/index_content.dart';
 import 'package:netplayer_web/pages/components/playing_bar.dart';
-import 'package:netplayer_web/pages/download.dart';
+
 import 'package:netplayer_web/pages/loved.dart';
 import 'package:netplayer_web/pages/playlist.dart';
 import 'package:netplayer_web/pages/search.dart';
@@ -38,8 +38,7 @@ class _IndexState extends State<Index> {
                   return GetPageRoute(page: () => All());
                 case "/loved":
                   return GetPageRoute(page: () => Loved());
-                case "/download":
-                  return GetPageRoute(page: () => const Download());
+
                 case "/artists":
                   return GetPageRoute(page: () => const Artists());
                 case "/albums":

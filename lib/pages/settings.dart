@@ -11,12 +11,9 @@ import 'package:netplayer_web/pages/components/progress_dialog.dart';
 import 'package:netplayer_web/pages/components/quality_dialog.dart';
 import 'package:netplayer_web/pages/components/title_area.dart';
 import 'package:netplayer_web/variables/dialog_var.dart';
-import 'package:netplayer_web/variables/download_var.dart';
 import 'package:netplayer_web/variables/player_var.dart';
 import 'package:netplayer_web/variables/settings_var.dart';
 import 'package:netplayer_web/variables/user_var.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Settings extends StatefulWidget {
@@ -28,13 +25,11 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
 
-  final DownloadVar downloadVar=Get.find();
   final Operations operations=Operations();
   late SharedPreferences prefs;
 
   SettingsVar s=Get.find();
   int cacheSize=0;
-  int downloadSize=0;
   bool loading=false;
   UserVar u = Get.find();
   PlayerVar p=Get.find();
@@ -48,8 +43,6 @@ class _SettingsState extends State<Settings> {
   @override
   void initState(){
     super.initState();
-    getCacheSize();
-    getDownloadSize();
     init();
   }
 
@@ -75,55 +68,6 @@ class _SettingsState extends State<Settings> {
     return size;
   }
 
-  Future<void> getCacheSize() async {
-    try {
-      final Directory tempDir = await getTemporaryDirectory();
-      var size = await getDirectorySize(tempDir);
-      setState(() {
-        cacheSize=size;
-      });
-    } catch (_) {
-      setState(() {
-        cacheSize=0;
-      });
-    }
-  }
-
-  Future<void> getDownloadSize() async {
-    try {
-      final Directory downloadDir = await getApplicationDocumentsDirectory();
-      var size = await getDirectorySize(Directory(path.join(downloadDir.path, 'downloads')));
-      setState(() {
-        downloadSize=size;
-      });
-    } catch (_) {
-      setState(() {
-        downloadSize=0;
-      });
-    }
-  }
-
-  Future<void> clearController() async {
-    final cacheDir = await getTemporaryDirectory();
-    if (cacheDir.existsSync()) {
-      try {
-        cacheDir.deleteSync(recursive: true);
-      } catch (_) {}
-    }
-    getCacheSize();
-  }
-
-  void clearDownload() async {
-    Directory downloadDir = await getApplicationDocumentsDirectory();
-    downloadDir=Directory(path.join(downloadDir.path, 'downloads'));
-    if (downloadDir.existsSync()) {
-      try {
-        downloadDir.deleteSync(recursive: true);
-      } catch (_) {}
-    }
-    await getDownloadSize();
-    await downloadVar.getDownloadList();
-  }
 
   String qualityText(){
     String text='';
@@ -280,26 +224,6 @@ class _SettingsState extends State<Settings> {
                               ),
                             ),
                             FTile(
-                              title: Text('enableLyric'.tr),
-                              details: Obx(()=>
-                                FSwitch(
-                                  value: s.enableLyric.value, 
-                                  onChange: (val) async {
-                                    if(val){
-                                      if(await d.showLyricDialog(context)){
-                                        s.enableLyric.value=val;
-                                        prefs.setBool('enableLyric', val);
-                                        operations.getLyric();
-                                      }
-                                    }else{
-                                      s.enableLyric.value=val;
-                                      prefs.setBool('enableLyric', val);
-                                    }
-                                  }
-                                )
-                              ),
-                            ),
-                            FTile(
                               title: Text(
                                 'enableNavidromeAPI'.tr, 
                                 style: TextStyle(
@@ -352,25 +276,6 @@ class _SettingsState extends State<Settings> {
                                 fontSize: 12,
                                 color: Colors.grey[400],
                               )),
-                            ),
-                            FTile(
-                              title: Text('keepScreenOnInLyric'.tr),
-                              subtitle: Text(
-                                "keepScreenOnInLyricContent".tr, 
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[400],
-                                ),
-                              ),
-                              details: Obx(()=>
-                                FSwitch(
-                                  value: s.wakeLockLyric.value,
-                                  onChange: (val) async {
-                                    s.wakeLockLyric.value=val;
-                                    prefs.setBool("wakeLockLyric", val);
-                                  },
-                                )
-                              )
                             ),
                             FTile( 
                               title: Text('showPlaylistCover'.tr),
@@ -432,29 +337,6 @@ class _SettingsState extends State<Settings> {
                               ),
                               onPress: () => s.showLanguageDialog(context),
                             ),
-                            FTile(
-                              onPress: () async {
-                                final rlt=await d.showOkCancelDialog(
-                                  context: context, 
-                                  title: 'clearCache'.tr, 
-                                  content: 'noAffectForUse'.tr, 
-                                  okText: 'continue'.tr,
-                                );
-                                if(rlt){
-                                  clearController();
-                                }
-                              },
-                              title: Text(
-                                'clearCache'.tr,
-                              ),
-                              subtitle: Text(
-                                sizeConvert(cacheSize),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[400]
-                                ),
-                              ),
-                            ),
                           ]
                         ),
                         FTileGroup(
@@ -503,27 +385,7 @@ class _SettingsState extends State<Settings> {
                             ),
                           ),
                           children: [
-                            FTile(
-                              onPress: () async {
-                                final rlt=await d.showOkCancelDialog(
-                                  context: context, 
-                                  title: 'deleteAllDownloadedSongs'.tr, 
-                                  content: 'deleteAllDownloadedSongsContent'.tr, 
-                                  okText: 'delete'.tr,
-                                );
-                                if(rlt){
-                                  clearDownload();
-                                }
-                              },
-                              title: Text("deleteAllDownloadedSongs".tr),
-                              subtitle: Text(
-                                sizeConvert(downloadSize),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[400]
-                                ),
-                              ),
-                            ),
+
                             FTile(
                               onPress: () async {
                                 setState(() {

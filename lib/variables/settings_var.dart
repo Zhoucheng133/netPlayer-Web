@@ -50,12 +50,9 @@ class SettingsVar extends GetxController{
   RxBool wifi=true.obs;
   var quality=CustomQuality().obs;
   var progressStyle=ProgressStyle.ring.obs;
-  RxBool showTranslation=true.obs;
-  RxBool enableLyric=false.obs;
 
   RxBool showPlaylistCover=true.obs;
   RxBool resizeCoverImg=false.obs;
-  RxBool wakeLockLyric=true.obs;
 
   Rx<LanguageType> lang=Rx(supportedLocales[0]);
 
@@ -100,17 +97,6 @@ class SettingsVar extends GetxController{
     }else{
       lang.value=supportedLocales[langIndex];
     }
-  }
-
-  Future<void> initLyric(BuildContext context) async {
-    final value=prefs.getBool("enableLyric");
-    if(value==null){
-      final enable=await Get.find<DialogVar>().showLyricDialog(context);
-      enableLyric.value=enable;
-      await prefs.setBool("enableLyric", enable);
-      return;
-    }
-    enableLyric.value=value;
   }
 
   void showLanguageDialog(BuildContext context){

@@ -96,7 +96,7 @@ class _SettingsState extends State<Settings> {
             ),
             const SizedBox(height: 10),
             Material(
-              color: Colors.white,
+              color: Theme.of(context).brightness==Brightness.light ? Colors.white : Colors.black,
               child: Slider(
                 value: s.paddingBottom.value.toDouble(),
                 min: 0,

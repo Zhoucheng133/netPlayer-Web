@@ -240,5 +240,8 @@ const Map<String, String> jaJP = {
   'enableLyric': '歌詞を有効にする',
   'lyricLicense': "このソフトウェアに表示される歌詞は、サードパーティサービス LRCLIB によって提供され、表示目的でのみ使用されます。歌詞および関連するすべての権利は、それぞれの権利者に帰属します。このソフトウェアは、歌詞の正確性、完全性、または著作権について責任を負いません。",
   'agreeAndEnable': '同意して有効化',
-  'keepDisabled': '無効のまま'
+  'keepDisabled': '無効のまま',
+
+  'paddingBottom': '下部パディング',
+  'none': 'なし'
 };

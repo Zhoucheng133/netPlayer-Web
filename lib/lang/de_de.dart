@@ -240,5 +240,8 @@ const Map<String, String> deDE = {
   'enableLyric': 'Liedtext aktivieren',
   'lyricLicense': "Die in dieser Software angezeigten Liedtexte werden vom Drittanbieterdienst LRCLIB bereitgestellt und dienen nur zu Anzeigezwecken. Die Liedtexte und alle damit verbundenen Rechte verbleiben bei ihren jeweiligen Rechteinhabern. Diese Software übernimmt keine Verantwortung für die Genauigkeit, Vollständigkeit oder das Urheberrecht der Liedtexte.",
   'agreeAndEnable': 'Akzeptieren & Aktivieren',
-  'keepDisabled': 'Deaktiviert lassen'
+  'keepDisabled': 'Deaktiviert lassen',
+
+  'paddingBottom': 'Unterer Abstand',
+  'none': 'Keine'
 };

@@ -240,5 +240,8 @@ const Map<String, String> zhTW = {
   'enableLyric': '啟用歌詞',
   'lyricLicense': "本軟體歌詞由第三方服務 LRCLIB 提供，僅用於歌詞展示。歌詞內容及相關權利歸原權利人所有，本軟體不對歌詞內容的準確性、完整性或版權問題負責。",
   'agreeAndEnable': '同意並啟用',
-  'keepDisabled': '保持停用'
+  'keepDisabled': '保持停用',
+
+  'paddingBottom': '頁底空隙',
+  'none': '無'
 };

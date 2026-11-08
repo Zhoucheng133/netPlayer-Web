@@ -241,5 +241,8 @@ const Map<String, String> zhCN={
   'lyricLicense': "本软件歌词由第三方服务 LRCLIB 提供，仅用于歌词展示。歌词内容及相关权利归原权利人所有，本软件不对歌词内容的准确性、完整性或版权问题负责。",
 
   'agreeAndEnable': '同意并启用',
-  'keepDisabled': '保持禁用'
+  'keepDisabled': '保持禁用',
+
+  'paddingBottom': '页底空隙',
+  'none': "无"
 };

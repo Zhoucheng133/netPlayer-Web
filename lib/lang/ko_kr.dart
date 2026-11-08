@@ -240,5 +240,8 @@ const Map<String, String> koKR = {
   'enableLyric': '가사 사용',
   'lyricLicense': "이 소프트웨어에 표시되는 가사는 타사 서비스인 LRCLIB에서 제공하며 가사 표시 목적으로만 사용됩니다. 가사 및 모든 관련 권리는 각 권리자에게 있습니다. 본 소프트웨어는 가사의 정확성, 완전성, 저작권에 대해 책임을 지지 않습니다.",
   'agreeAndEnable': '동의 및 사용',
-  'keepDisabled': '비활성 유지'
+  'keepDisabled': '비활성 유지',
+
+  'paddingBottom': '하단 여백',
+  'none': '없음'
 };

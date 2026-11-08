@@ -240,5 +240,8 @@ const Map<String, String> enUS = {
   'enableLyric': 'Enable Lyric',
   'lyricLicense': "The lyrics displayed in this software are provided by the third-party service LRCLIB and are intended for display purposes only. The lyrics and all related rights belong to their respective rights holders. This software does not take responsibility for the accuracy, completeness, or copyright of the lyrics.",
   'agreeAndEnable': 'Agree & Enable',
-  'keepDisabled': 'Keep Disabled'
+  'keepDisabled': 'Keep Disabled',
+
+  'paddingBottom': 'Bottom Padding',
+  'none': 'None'
 };

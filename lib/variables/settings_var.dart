@@ -6,17 +6,6 @@ import 'package:get/get.dart';
 import 'package:netplayer_web/variables/dialog_var.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class CustomQuality{
-  bool cellularOnly=false;
-  int quality=0;
-  Map<String, dynamic> toJson() {
-    return {
-      'cellularOnly': cellularOnly,
-      'quality': quality,
-    };
-  }
-}
-
 class LanguageType{
   String name;
   Locale locale;
@@ -47,8 +36,6 @@ class SettingsVar extends GetxController{
 
   RxBool savePlay=true.obs;
   RxBool autoLogin=true.obs;
-  RxBool wifi=true.obs;
-  var quality=CustomQuality().obs;
   var progressStyle=ProgressStyle.ring.obs;
 
   RxBool showPlaylistCover=true.obs;

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -85,7 +84,6 @@ class _MainViewState extends State<MainView> {
   void dispose() {
     accountListener.dispose();
     nowPlayListener.dispose();
-    subscription.cancel();
     super.dispose();
   }
 
@@ -152,27 +150,6 @@ class _MainViewState extends State<MainView> {
     }
   }
 
-  void qualitySet(){
-    var quality=prefs.getString('quality');
-    if(quality!=null){
-      final qualityJson=jsonDecode(quality);
-      s.quality.value.cellularOnly=qualityJson['cellularOnly'];
-      s.quality.value.quality=qualityJson['quality'];
-    }
-  }
-
-  final Connectivity connectivity = Connectivity();
-
-  Future<void> networkSet() async {
-    var connectivityResult = await connectivity.checkConnectivity();
-    if(connectivityResult.contains(ConnectivityResult.mobile)){
-      s.wifi.value=false;
-      s.wifi.refresh();
-    }
-  }
-
-  late StreamSubscription<List<ConnectivityResult>> subscription;
-
   void progressSet(){
     final style=prefs.getInt('progressStyle');
     if(style!=null){
@@ -231,19 +208,8 @@ class _MainViewState extends State<MainView> {
     s.resizeCoverImg.value=prefs.getBool('resizeCoverImg')??false;
     if(await loginCheck()){
       nowPlaySet();
-      qualitySet();
       progressSet();
     }
-    subscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> result) {
-      if(result.contains(ConnectivityResult.mobile)){
-        s.wifi.value=false;
-        s.wifi.refresh();
-      }else{
-        s.wifi.value=true;
-        s.wifi.refresh();
-      }
-    });
-    await networkSet();
     setState(() {
       loading=false;
     });

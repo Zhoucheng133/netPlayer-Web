@@ -8,7 +8,6 @@ import 'package:netplayer_web/operations/account.dart';
 import 'package:netplayer_web/operations/operations.dart';
 import 'package:netplayer_web/operations/play_check.dart';
 import 'package:netplayer_web/pages/components/progress_dialog.dart';
-import 'package:netplayer_web/pages/components/quality_dialog.dart';
 import 'package:netplayer_web/pages/components/title_area.dart';
 import 'package:netplayer_web/variables/dialog_var.dart';
 import 'package:netplayer_web/variables/player_var.dart';
@@ -66,30 +65,6 @@ class _SettingsState extends State<Settings> {
       }
     }
     return size;
-  }
-
-
-  String qualityText(){
-    String text='';
-    if(s.quality.value.cellularOnly){
-      text+='${"cellularOnly".tr}: ';
-    }
-    text+=s.quality.value.quality==0 ? 'original'.tr : '${s.quality.value.quality.toString()} Kbps';
-    return text;
-  }
-
-  Future<void> showQualityWarning(BuildContext context) async {
-    final rlt=await d.showOkCancelDialog(
-      context: context,
-      title: 'noRecommendSetting'.tr,
-      content: 'noRecommendSettingContent'.tr,
-      okText: 'continue'.tr,
-    );
-    if(rlt){
-      if(context.mounted){
-        showQualityDialog(context);
-      }
-    }
   }
 
   String progresStyle(){

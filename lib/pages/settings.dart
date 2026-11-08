@@ -188,12 +188,7 @@ class _SettingsState extends State<Settings> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         FTileGroup(
-                          label: Text(
-                            'appSettings'.tr, 
-                            style: TextStyle(
-                              fontFamily: 'PuHui',
-                            ),
-                          ),
+                          label: Text('appSettings'.tr),
                           children: [
                             FTile(
                               title: Text(
@@ -340,12 +335,7 @@ class _SettingsState extends State<Settings> {
                           ]
                         ),
                         FTileGroup(
-                          label: Text(
-                            'apperanceSettings'.tr, 
-                            style: TextStyle(
-                              fontFamily: 'PuHui'
-                            ),
-                          ),
+                          label: Text('apperanceSettings'.tr),
                           children: [
                             FTile(
                               onPress: ()=>showDarkModeDialog(context),
@@ -378,12 +368,7 @@ class _SettingsState extends State<Settings> {
                           ]
                         ),
                         FTileGroup(
-                          label: Text(
-                            'others'.tr,
-                            style: TextStyle(
-                              fontFamily: 'PuHui'
-                            ),
-                          ),
+                          label: Text('others'.tr),
                           children: [
 
                             FTile(

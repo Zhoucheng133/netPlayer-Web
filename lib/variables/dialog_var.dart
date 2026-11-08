@@ -50,7 +50,6 @@ class DialogVar extends GetxController{
                     title: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: Text(item.name, style: TextStyle(
-                        fontFamily: 'PuHui',
                         fontSize: 17
                       ),),
                     ),
@@ -84,14 +83,10 @@ class DialogVar extends GetxController{
     await showAdaptiveDialog(
       context: context, 
       builder: (BuildContext context)=>FDialog(
-        title: Text(title, style: TextStyle(
-          fontFamily: 'PuHui'
-        ),),
+        title: Text(title),
         body: Padding(
           padding: const EdgeInsets.symmetric(vertical: 5),
-          child: Text(content, style: TextStyle(
-            fontFamily: 'PuHui'
-          ),),
+          child: Text(content),
         ),
         direction: Axis.horizontal,
         actions: [
@@ -109,7 +104,6 @@ class DialogVar extends GetxController{
                 ()=>Text(
                   okText??'ok'.tr, 
                   style: TextStyle(
-                    fontFamily: 'PuHui',
                     color: settings.darkMode.value ? Colors.black : Colors.white,
                   )
                 ),
@@ -131,9 +125,7 @@ class DialogVar extends GetxController{
     await showAdaptiveDialog(
       context: context, 
       builder: (BuildContext context)=>FDialog(
-        title: Text(title, style: TextStyle(
-          fontFamily: 'PuHui',
-        ),),
+        title: Text(title),
         body: Padding(
           padding: const EdgeInsets.symmetric(vertical: 5),
           child: child,
@@ -154,7 +146,6 @@ class DialogVar extends GetxController{
                 Text(
                   okText??'ok'.tr, 
                   style: TextStyle(
-                    fontFamily: 'PuHui',
                     color: settings.darkMode.value ? Colors.black : Colors.white,
                   )
                 )
@@ -178,9 +169,7 @@ class DialogVar extends GetxController{
     await showAdaptiveDialog(
       context: context, 
       builder: (BuildContext context)=>FDialog(
-        title: Text(title, style: TextStyle(
-          fontFamily: 'PuHui',
-        ),),
+        title: Text(title),
         body: Padding(
           padding: const EdgeInsets.symmetric(vertical: 5),
           child: child,
@@ -201,7 +190,6 @@ class DialogVar extends GetxController{
                 Text(
                   cancelText??'cancel'.tr, 
                   style: TextStyle(
-                    fontFamily: 'PuHui',
                     color: settings.darkMode.value ? Colors.white : Colors.black,
                   )
                 )
@@ -220,7 +208,6 @@ class DialogVar extends GetxController{
                 Text(
                   okText??'continue'.tr, 
                   style: TextStyle(
-                    fontFamily: 'PuHui',
                     color: settings.darkMode.value ? Colors.black : Colors.white,
                   )
                 )
@@ -245,14 +232,10 @@ class DialogVar extends GetxController{
       context: context, 
       builder: (BuildContext context)=>FDialog(
         direction: horizontal ? Axis.horizontal : Axis.vertical,
-        title: Text(title, style: TextStyle(
-          fontFamily: 'PuHui',
-        ),),
+        title: Text(title),
         body: Padding(
           padding: const EdgeInsets.symmetric(vertical: 5),
-          child: Text(content, style: TextStyle(
-            fontFamily: 'PuHui',
-          ),),
+          child: Text(content),
         ),
         actions: [
           FButton.raw(
@@ -267,7 +250,6 @@ class DialogVar extends GetxController{
                 Text(
                   cancelText??'cancel'.tr, 
                   style: TextStyle(
-                    fontFamily: 'PuHui',
                     color: settings.darkMode.value ? Colors.white : Colors.black,
                   )
                 )
@@ -286,7 +268,6 @@ class DialogVar extends GetxController{
                 Text(
                   okText??'continue'.tr, 
                   style: TextStyle(
-                    fontFamily: 'PuHui',
                     color: settings.darkMode.value ? Colors.black : Colors.white,
                   )
                 )

@@ -95,9 +95,6 @@ class _MainAppState extends State<MainApp> {
         builder: (context, child)=>FTheme(
           data: FThemeData(
             colors: s.darkMode.value ? FThemes.zinc.dark.colors : FThemes.zinc.light.colors,
-            typography: FTypography(
-              defaultFontFamily: "PuHui"
-            )
           ),
           child: DefaultTextHeightBehavior(
             textHeightBehavior: const TextHeightBehavior(
@@ -109,18 +106,14 @@ class _MainAppState extends State<MainApp> {
         ),
         theme: ThemeData(
           brightness: s.darkMode.value ? Brightness.dark : Brightness.light,
-          fontFamily: 'PuHui', 
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.blue,
             brightness: s.darkMode.value ? Brightness.dark : Brightness.light,
           ),
           textTheme: s.darkMode.value ? ThemeData.dark().textTheme.apply(
-            fontFamily: 'PuHui',
             bodyColor: Colors.white,
             displayColor: Colors.white,
-          ) : ThemeData.light().textTheme.apply(
-            fontFamily: 'PuHui',
-          ),
+          ) : ThemeData.light().textTheme.apply(),
           dialogTheme: DialogThemeData(
             backgroundColor: s.darkMode.value ? null : Colors.grey[50],
           ),

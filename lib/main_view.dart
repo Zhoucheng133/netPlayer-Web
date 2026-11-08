@@ -190,6 +190,7 @@ class _MainViewState extends State<MainView> {
       prefs.setBool("useNavidrome", true);
     }
     p.useNavidrome.value=useNavidrome??true;
+    s.paddingBottom.value=prefs.getInt("paddingBottom")??0;
     return false;
   }
 

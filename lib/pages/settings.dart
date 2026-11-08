@@ -76,6 +76,49 @@ class _SettingsState extends State<Settings> {
     return 'background'.tr;
   }
 
+  void showPaddingBottomDialog(BuildContext context){
+    int tmpPadding=s.paddingBottom.value;
+
+    d.showOkCancelDialogRaw(
+      context: context, 
+      title: "paddingBottom".tr, 
+      okText: 'ok'.tr,
+      child: Obx(()=>
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              s.paddingBottom.value==0 ? "none".tr : s.paddingBottom.value.toString(),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Material(
+              color: Colors.white,
+              child: Slider(
+                value: s.paddingBottom.value.toDouble(),
+                min: 0,
+                max: 50,
+                divisions: 50,
+                onChanged: (val) {
+                  s.paddingBottom.value = val.toInt();
+                },
+              ),
+            ),
+          ],
+        ),
+      ), 
+      okHandler: () async {
+        prefs.setInt("paddingBottom", s.paddingBottom.value);
+      },
+      cancelHandler: () async {
+        s.paddingBottom.value=tmpPadding;
+      }
+    );
+  }
+
   Future<void> showDarkModeDialog(BuildContext context) async {
 
     bool tmpDarkMode=s.darkMode.value;
@@ -313,9 +356,7 @@ class _SettingsState extends State<Settings> {
                           label: Text('apperanceSettings'.tr),
                           children: [
                             FTile(
-                              onPress: (){
-                                // TODO set Padding Bottom
-                              },
+                              onPress: ()=>showPaddingBottomDialog(context),
                               title: Text('paddingBottom'.tr),
                               subtitle: Obx(()=>
                                 Text(

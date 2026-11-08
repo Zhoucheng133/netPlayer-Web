@@ -264,7 +264,7 @@ class Operations{
         context: context,
         builder: (BuildContext context) {
           return SizedBox(
-            height: MediaQuery.of(context).padding.bottom+160,
+            height: s.paddingBottom.value+160,
             child: Padding(
               padding: const EdgeInsets.only(left: 30, right: 30),
               child: Row(

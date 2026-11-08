@@ -61,7 +61,7 @@ class DialogVar extends GetxController{
                 ).toList(),
               ),
               Container(
-                height: MediaQuery.of(context).padding.bottom,
+                height: settings.paddingBottom.value.toDouble(),
                 color: settings.darkMode.value ? Colors.black : Colors.white,
               )
             ],

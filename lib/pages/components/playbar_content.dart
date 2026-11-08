@@ -42,7 +42,7 @@ class _PlaybarContentState extends State<PlaybarContent> {
             Obx(()=>
               s.progressStyle.value==ProgressStyle.background ? Positioned(
                 child: Container(
-                  height: PageStatic().playbarHeight.toDouble()+MediaQuery.of(context).padding.bottom,
+                  height: PageStatic().playbarHeight.toDouble()+s.paddingBottom.value,
                   width: MediaQuery.of(context).size.width*(p.nowPlay['duration']==0 ? 0.0 : (p.nowPlay['duration']==0 ? 0.0 : (p.playProgress.value / 1000 / p.nowPlay["duration"]).clamp(0.0, 1.0))),
                   color: s.darkMode.value ? s.bgColor3 : Colors.blue[50]!.withAlpha(170),
                 )
@@ -198,7 +198,7 @@ class _PlaybarContentState extends State<PlaybarContent> {
                   ),
                 ),
                 SizedBox(
-                  height: MediaQuery.of(context).padding.bottom,
+                  height: s.paddingBottom.value.toDouble(),
                 )
               ],
             )

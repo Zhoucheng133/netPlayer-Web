@@ -47,6 +47,8 @@ class SettingsVar extends GetxController{
   final bgColor2=const Color.fromARGB(255, 60, 60, 60);
   final bgColor3=const Color.fromARGB(255, 80, 80, 80);
 
+  RxInt paddingBottom=35.obs;
+
   RxBool darkMode=false.obs;
   RxBool autoDark=true.obs;
 

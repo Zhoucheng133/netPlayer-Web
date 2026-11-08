@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netplayer_web/pages/components/queue_item.dart';
 import 'package:netplayer_web/variables/player_var.dart';
+import 'package:netplayer_web/variables/settings_var.dart';
 import 'package:scroll_to_index/scroll_to_index.dart';
 
 class PlayQueue extends StatefulWidget {
@@ -14,6 +15,7 @@ class PlayQueue extends StatefulWidget {
 class _PlayQueueState extends State<PlayQueue> {
 
   final PlayerVar p=Get.find();
+  final SettingsVar s=Get.find();
   AutoScrollController controller=AutoScrollController();
 
   @override
@@ -30,7 +32,7 @@ class _PlayQueueState extends State<PlayQueue> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom+10, top: 15),
+      padding: EdgeInsets.only(bottom: s.paddingBottom.value+10, top: 15),
       child: Column(
         children: [
           Padding(

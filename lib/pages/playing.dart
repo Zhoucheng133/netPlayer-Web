@@ -671,7 +671,7 @@ class _PlayingState extends State<Playing> with SingleTickerProviderStateMixin {
                 ),
                 Container(
                   color: s.darkMode.value ? s.bgColor1 : Colors.grey[100],
-                  height: MediaQuery.of(context).padding.bottom,
+                  height: s.paddingBottom.value.toDouble(),
                   width: double.infinity,
                 )
               ],

@@ -313,6 +313,21 @@ class _SettingsState extends State<Settings> {
                           label: Text('apperanceSettings'.tr),
                           children: [
                             FTile(
+                              onPress: (){
+                                // TODO set Padding Bottom
+                              },
+                              title: Text('paddingBottom'.tr),
+                              subtitle: Obx(()=>
+                                Text(
+                                  s.paddingBottom.value==0 ? "none".tr : s.paddingBottom.value.toString(),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[400]
+                                  ),
+                                )
+                              ),
+                            ),
+                            FTile(
                               onPress: ()=>showDarkModeDialog(context),
                               title: Text('darkMode'.tr),
                               subtitle: Obx(()=>
@@ -375,8 +390,11 @@ class _SettingsState extends State<Settings> {
                     ),
                   ),
                 ],
-              )
+              ),
             ),
+            SizedBox(
+              height: s.paddingBottom.value.toDouble(),
+            )
           ],
         ),
       ),

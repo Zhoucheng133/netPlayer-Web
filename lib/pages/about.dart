@@ -78,7 +78,7 @@ class _AboutState extends State<About> {
                   const SizedBox(height: 20,),
                   GestureDetector(
                     onTap: (){
-                      final url=Uri.parse('https://github.com/Zhoucheng133/netPlayer-Mobile');
+                      final url=Uri.parse('https://github.com/Zhoucheng133/netPlayer-Web');
                       launchUrl(url);
                     },
                     child: Row(

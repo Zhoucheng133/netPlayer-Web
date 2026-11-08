@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netplayer_web/operations/data_get.dart';
@@ -90,41 +89,38 @@ class _ArtistsState extends State<Artists> {
         ),
         body: RefreshIndicator(
           onRefresh: () => getList(context),
-          child: CupertinoScrollbar(
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            key: const Key("1"),
             controller: controller,
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              key: const Key("1"),
-              controller: controller,
-              slivers: [
-                SliverToBoxAdapter(
-                  child: TitleArea(title: 'artists'.tr, subtitle: '${ls.length} ${"artistEnd".tr}',),
+            slivers: [
+              SliverToBoxAdapter(
+                child: TitleArea(title: 'artists'.tr, subtitle: '${ls.length} ${"artistEnd".tr}',),
+              ),
+              loading ? SliverList.builder(
+                itemCount: 20,
+                itemBuilder: (context, index) {
+                  return const ArtistSkeleton();
+                },
+              ) : ls.isEmpty ? SliverFillRemaining(
+                hasScrollBody: false,
+                child: Container(
+                  color: s.darkMode.value ? s.bgColor2 : Colors.white,
+                  child: Empty()
+                )
+              ) : SliverList.builder(
+                itemCount: ls.length,
+                itemBuilder: (context ,index){
+                  return ArtistItem(index: index, item: ls[index], );
+                }
+              ),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Container(
+                  color: s.darkMode.value ? s.bgColor2 : Colors.white,
                 ),
-                loading ? SliverList.builder(
-                  itemCount: 20,
-                  itemBuilder: (context, index) {
-                    return const ArtistSkeleton();
-                  },
-                ) : ls.isEmpty ? SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Container(
-                    color: s.darkMode.value ? s.bgColor2 : Colors.white,
-                    child: Empty()
-                  )
-                ) : SliverList.builder(
-                  itemCount: ls.length,
-                  itemBuilder: (context ,index){
-                    return ArtistItem(index: index, item: ls[index], );
-                  }
-                ),
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Container(
-                    color: s.darkMode.value ? s.bgColor2 : Colors.white,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netplayer_web/operations/data_get.dart';
@@ -91,41 +90,38 @@ class _AlbumsState extends State<Albums> {
         ),
         body: RefreshIndicator(
           onRefresh: () => getList(context),
-          child: CupertinoScrollbar(
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            key: const Key("1"),
             controller: controller,
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              key: const Key("1"),
-              controller: controller,
-              slivers: [
-                SliverToBoxAdapter(
-                  child: TitleArea(title: 'albums'.tr, subtitle: '${ls.length} ${'albumEnd'.tr}',),
+            slivers: [
+              SliverToBoxAdapter(
+                child: TitleArea(title: 'albums'.tr, subtitle: '${ls.length} ${'albumEnd'.tr}',),
+              ),
+              loading ? SliverList.builder(
+                itemCount: 20,
+                itemBuilder: (context, index) {
+                  return const AlbumSkeleton();
+                },
+              ) : ls.isEmpty ? SliverFillRemaining(
+                hasScrollBody: false,
+                child: Container(
+                  color: s.darkMode.value ? s.bgColor2 : Colors.white,
+                  child: Empty()
+                )
+              ) : SliverList.builder(
+                itemCount: ls.length,
+                itemBuilder: (context, index){
+                  return AlbumItem(index: index, item: ls[index]);
+                }
+              ),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Container(
+                  color: s.darkMode.value ? s.bgColor2 : Colors.white,
                 ),
-                loading ? SliverList.builder(
-                  itemCount: 20,
-                  itemBuilder: (context, index) {
-                    return const AlbumSkeleton();
-                  },
-                ) : ls.isEmpty ? SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Container(
-                    color: s.darkMode.value ? s.bgColor2 : Colors.white,
-                    child: Empty()
-                  )
-                ) : SliverList.builder(
-                  itemCount: ls.length,
-                  itemBuilder: (context, index){
-                    return AlbumItem(index: index, item: ls[index]);
-                  }
-                ),
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Container(
-                    color: s.darkMode.value ? s.bgColor2 : Colors.white,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

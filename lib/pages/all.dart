@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netplayer_web/operations/data_get.dart';
@@ -129,46 +128,43 @@ class _AllState extends State<All> {
           absorbing: loading,
           child: RefreshIndicator(
             onRefresh: () => getList(context),
-            child: CupertinoScrollbar(
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              key: const Key("1"),
               controller: controller,
-              child: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                key: const Key("1"),
-                controller: controller,
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: TitleArea(title: 'allSongs'.tr, subtitle: '${ u.authorization.value.isEmpty && ls.length >= 500 ? "> ${ls.length}" : ls.length} ${'songsEnd'.tr}', showWarning: u.authorization.value.isEmpty && ls.length >= 500,),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: TitleArea(title: 'allSongs'.tr, subtitle: '${ u.authorization.value.isEmpty && ls.length >= 500 ? "> ${ls.length}" : ls.length} ${'songsEnd'.tr}', showWarning: u.authorization.value.isEmpty && ls.length >= 500,),
+                ),
+                loading ? SliverList.builder(
+                  itemCount: 20,
+                  itemBuilder: (context, _){
+                    return const SongSkeleton();
+                  }
+                ) : ls.isEmpty ? SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Container(
+                    color: s.darkMode.value ? s.bgColor2 : Colors.white,
+                    child: Empty()
+                  )
+                ) : SliverList.builder(
+                  itemCount: ls.length,
+                  itemBuilder: (context, index){
+                    return AutoScrollTag(
+                      controller: controller,
+                      index: index,
+                      key: ValueKey(index),
+                      child: SongItem(item: ls[index], index: index, ls: ls, from: 'all', listId: '', ),
+                    );
+                  },
+                ),
+                if(ls.isEmpty) SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Container(
+                    color: s.darkMode.value ? s.bgColor2 : Colors.white,
                   ),
-                  loading ? SliverList.builder(
-                    itemCount: 20,
-                    itemBuilder: (context, _){
-                      return const SongSkeleton();
-                    }
-                  ) : ls.isEmpty ? SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Container(
-                      color: s.darkMode.value ? s.bgColor2 : Colors.white,
-                      child: Empty()
-                    )
-                  ) : SliverList.builder(
-                    itemCount: ls.length,
-                    itemBuilder: (context, index){
-                      return AutoScrollTag(
-                        controller: controller,
-                        index: index,
-                        key: ValueKey(index),
-                        child: SongItem(item: ls[index], index: index, ls: ls, from: 'all', listId: '', ),
-                      );
-                    },
-                  ),
-                  if(ls.isEmpty) SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Container(
-                      color: s.darkMode.value ? s.bgColor2 : Colors.white,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

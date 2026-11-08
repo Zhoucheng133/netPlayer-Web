@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netplayer_web/operations/data_get.dart';
@@ -114,41 +113,38 @@ class _AlbumContentState extends State<AlbumContent> {
                 duration: const Duration(milliseconds: 200),
                 child: RefreshIndicator(
                   onRefresh: ()=>getList(context),
-                  child: CupertinoScrollbar(
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    key: const Key("1"),
                     controller: controller,
-                    child: CustomScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      key: const Key("1"),
-                      controller: controller,
-                      slivers: [
-                        SliverToBoxAdapter(
-                          child: TitleArea(title: "${'album'.tr}: ${widget.album}", subtitle: '${ls.length} ${"songsEnd".tr}',),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: TitleArea(title: "${'album'.tr}: ${widget.album}", subtitle: '${ls.length} ${"songsEnd".tr}',),
+                      ),
+                      loading ? SliverList.builder(
+                        itemCount: widget.songCount > 0 ? widget.songCount : 20,
+                        itemBuilder: (context, index) {
+                          return const SongSkeleton();
+                        },
+                      ) : ls.isEmpty ? SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Container(
+                          color: s.darkMode.value ? s.bgColor2 : Colors.white,
+                          child: Empty()
+                        )
+                      ) : SliverList.builder(
+                        itemCount: ls.length,
+                        itemBuilder: (context, index){
+                          return SongItem(item: ls[index], index: index, ls: ls, from: 'album', listId: widget.id, useRootNavigator: widget.showPlayingBar);
+                        }
+                      ),
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Container(
+                          color: s.darkMode.value ? s.bgColor2 : Colors.white,
                         ),
-                        loading ? SliverList.builder(
-                          itemCount: widget.songCount > 0 ? widget.songCount : 20,
-                          itemBuilder: (context, index) {
-                            return const SongSkeleton();
-                          },
-                        ) : ls.isEmpty ? SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Container(
-                            color: s.darkMode.value ? s.bgColor2 : Colors.white,
-                            child: Empty()
-                          )
-                        ) : SliverList.builder(
-                          itemCount: ls.length,
-                          itemBuilder: (context, index){
-                            return SongItem(item: ls[index], index: index, ls: ls, from: 'album', listId: widget.id, useRootNavigator: widget.showPlayingBar);
-                          }
-                        ),
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Container(
-                            color: s.darkMode.value ? s.bgColor2 : Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),

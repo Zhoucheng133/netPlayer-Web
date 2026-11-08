@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart' show CupertinoScrollbar;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netplayer_web/pages/components/queue_item.dart';
@@ -61,18 +60,15 @@ class _PlayQueueState extends State<PlayQueue> {
           const SizedBox(height: 15,),
           Expanded(
             child: Obx(()=>
-              CupertinoScrollbar(
+              ListView.builder(
                 controller: controller,
-                child: ListView.builder(
+                itemCount: p.nowPlay['list'].length,
+                itemBuilder: (context, index)=>AutoScrollTag(
+                  key: ValueKey(index),
                   controller: controller,
-                  itemCount: p.nowPlay['list'].length,
-                  itemBuilder: (context, index)=>AutoScrollTag(
-                    key: ValueKey(index),
-                    controller: controller,
-                    index: index,
-                    child: QueueItem(songItem: p.nowPlay['list'][index], index: index,)
-                  )
-                ),
+                  index: index,
+                  child: QueueItem(songItem: p.nowPlay['list'][index], index: index,)
+                )
               ),
             )
           )

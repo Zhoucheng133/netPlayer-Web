@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netplayer_web/operations/operations.dart';
@@ -129,53 +128,50 @@ class _SearchState extends State<Search> {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: ()=>searchHandler(context),
-                child: CupertinoScrollbar(
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
                   controller: controller,
-                  child: CustomScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    controller: controller,
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: SearchTitleArea(mode: mode, changeMode: (val)=>changeMode(val))
-                      ),
-                      SliverPersistentHeader(
-                        pinned: true,
-                        delegate: SearchBox(
-                          (context)=>SearchInput(
-                            textController: textController, focus: focus, search: ()=>searchHandler(context), mode: mode,
-                          ),
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: SearchTitleArea(mode: mode, changeMode: (val)=>changeMode(val))
+                    ),
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: SearchBox(
+                        (context)=>SearchInput(
+                          textController: textController, focus: focus, search: ()=>searchHandler(context), mode: mode,
                         ),
                       ),
-                      (mode=='song' ? ls['songs'] : mode=='album' ? ls['albums'] : ls['artists']).isEmpty && textController.text.isNotEmpty ? SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Container(
-                          color: s.darkMode.value ? s.bgColor2 : Colors.white,
-                          child: Empty()
-                        )
-                      ) : mode=='song' ? SliverList.builder(
-                        itemCount: ls['songs'].length,
-                        itemBuilder: (context, index){
-                          return SongItem(item: ls['songs'][index], index: index, ls: ls['songs'], from: 'search', listId: textController.text, );
-                        }
-                      ) : mode=='album' ? SliverList.builder(
-                        itemCount: ls['albums'].length,
-                        itemBuilder: (context, index){
-                          return AlbumItem(index: index, item: ls['albums'][index]);
-                        }
-                      ) :  SliverList.builder(
-                        itemCount: ls['artists'].length,
-                        itemBuilder: (context, index){
-                          return ArtistItem(index: index, item: ls['artists'][index]);
-                        }
+                    ),
+                    (mode=='song' ? ls['songs'] : mode=='album' ? ls['albums'] : ls['artists']).isEmpty && textController.text.isNotEmpty ? SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Container(
+                        color: s.darkMode.value ? s.bgColor2 : Colors.white,
+                        child: Empty()
+                      )
+                    ) : mode=='song' ? SliverList.builder(
+                      itemCount: ls['songs'].length,
+                      itemBuilder: (context, index){
+                        return SongItem(item: ls['songs'][index], index: index, ls: ls['songs'], from: 'search', listId: textController.text, );
+                      }
+                    ) : mode=='album' ? SliverList.builder(
+                      itemCount: ls['albums'].length,
+                      itemBuilder: (context, index){
+                        return AlbumItem(index: index, item: ls['albums'][index]);
+                      }
+                    ) :  SliverList.builder(
+                      itemCount: ls['artists'].length,
+                      itemBuilder: (context, index){
+                        return ArtistItem(index: index, item: ls['artists'][index]);
+                      }
+                    ),
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Container(
+                        color: s.darkMode.value ? s.bgColor2 : Colors.white,
                       ),
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Container(
-                          color: s.darkMode.value ? s.bgColor2 : Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

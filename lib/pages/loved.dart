@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:netplayer_web/operations/play_check.dart';
@@ -143,61 +142,58 @@ class _LovedState extends State<Loved> {
           absorbing: loading,
           child: RefreshIndicator(
             onRefresh: () => getList(context),
-            child: CupertinoScrollbar(
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              key: const Key('1'),
               controller: controller,
-              child: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                key: const Key('1'),
-                controller: controller,
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: LovedTitleArea(subtitle: subtitle(), changeMode: (value)=>changeMode(value), mode: mode),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: LovedTitleArea(subtitle: subtitle(), changeMode: (value)=>changeMode(value), mode: mode),
+                ),
+                (mode=="song" ? lsVar.lovedSongs : mode=="artist" ? lsVar.lovedArtists : lsVar.lovedAlbums).isEmpty ? SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Container(
+                    color: s.darkMode.value ? s.bgColor2 : Colors.white,
+                    child: Empty()
+                  )
+                ) : mode=="song" ? SliverList.builder(
+                  itemCount: lsVar.lovedSongs.length,
+                  itemBuilder: (context, index){
+                    return AutoScrollTag(
+                      key: ValueKey(index),
+                      index: index,
+                      controller: controller,
+                      child: SongItem(item: lsVar.lovedSongs[index], index: index, ls: lsVar.lovedSongs, from: 'loved', listId: '',),
+                    );
+                  }
+                ) : mode=="artist" ? SliverList.builder(
+                  itemCount: lsVar.lovedArtists.length,
+                  itemBuilder: (context, index){
+                    return AutoScrollTag(
+                      key: ValueKey(index),
+                      index: index,
+                      controller: controller,
+                      child: ArtistItem(item: lsVar.lovedArtists[index], index: index,),
+                    );
+                  }
+                ) : SliverList.builder(
+                  itemCount: lsVar.lovedAlbums.length,
+                  itemBuilder: (context, index){
+                    return AutoScrollTag(
+                      key: ValueKey(index),
+                      index: index,
+                      controller: controller,
+                      child: AlbumItem(item: lsVar.lovedAlbums[index], index: index),
+                    );
+                  }
+                ),
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Container(
+                    color: s.darkMode.value ? s.bgColor2 : Colors.white,
                   ),
-                  (mode=="song" ? lsVar.lovedSongs : mode=="artist" ? lsVar.lovedArtists : lsVar.lovedAlbums).isEmpty ? SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Container(
-                      color: s.darkMode.value ? s.bgColor2 : Colors.white,
-                      child: Empty()
-                    )
-                  ) : mode=="song" ? SliverList.builder(
-                    itemCount: lsVar.lovedSongs.length,
-                    itemBuilder: (context, index){
-                      return AutoScrollTag(
-                        key: ValueKey(index),
-                        index: index,
-                        controller: controller,
-                        child: SongItem(item: lsVar.lovedSongs[index], index: index, ls: lsVar.lovedSongs, from: 'loved', listId: '',),
-                      );
-                    }
-                  ) : mode=="artist" ? SliverList.builder(
-                    itemCount: lsVar.lovedArtists.length,
-                    itemBuilder: (context, index){
-                      return AutoScrollTag(
-                        key: ValueKey(index),
-                        index: index,
-                        controller: controller,
-                        child: ArtistItem(item: lsVar.lovedArtists[index], index: index,),
-                      );
-                    }
-                  ) : SliverList.builder(
-                    itemCount: lsVar.lovedAlbums.length,
-                    itemBuilder: (context, index){
-                      return AutoScrollTag(
-                        key: ValueKey(index),
-                        index: index,
-                        controller: controller,
-                        child: AlbumItem(item: lsVar.lovedAlbums[index], index: index),
-                      );
-                    }
-                  ),
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Container(
-                      color: s.darkMode.value ? s.bgColor2 : Colors.white,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

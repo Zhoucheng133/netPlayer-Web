@@ -10,7 +10,7 @@
 
 [netPlayer Next](https://github.com/Zhoucheng133/netPlayer-Next) | [netPlayer Mobile](https://github.com/Zhoucheng133/netPlayer-Mobile) | **★ netPlayer Web**
 
-这是[netPlayer Mobile](https://github.com/Zhoucheng133/netPlayer-Mobile)的分支版本，用来在网页上搭建netPlayer (PWA)
+这是[netPlayer Mobile](https://github.com/Zhoucheng133/netPlayer-Mobile)的分支版本，用来以网页的形式搭建netPlayer (PWA)
 
 ## 功能
 

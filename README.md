@@ -15,8 +15,6 @@
 
 这是 [netPlayer Mobile](https://github.com/Zhoucheng133/netPlayer-Mobile) 的 Web 分支版本，支持作为 PWA（渐进式网页应用）安装到您的设备上随时随地使用。
 
----
-
 ## 功能对比
 
 详细功能请参考 [netPlayer Mobile](https://github.com/Zhoucheng133/netPlayer-Mobile) 仓库。与移动端相比，Web 端的差异如下：
@@ -26,8 +24,6 @@
 | 下载歌曲和离线播放 | ✅ | ❌ |
 | 歌词展示 | ✅ | ❌ |
 | 远程控制桌面版 netPlayer | ✅ | ❌ |
-
----
 
 ## 部署与使用
 
@@ -40,8 +36,6 @@
 
 ### 2. PWA 适配
 本项目支持安装为 PWA。在部分移动设备的浏览器中，底部系统导航条可能会遮挡内容，您可以在**设置**中调整底部边距/空隙。
-
----
 
 ## 本地构建与开发
 
@@ -60,8 +54,6 @@
    ```bash
    flutter build web --base-href /netPlayer-Web/
    ```
-
----
 
 ## 相关链接
 

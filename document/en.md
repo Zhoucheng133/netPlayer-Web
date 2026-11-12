@@ -15,8 +15,6 @@
 
 This is a web-focused fork/adaptation of [netPlayer Mobile](https://github.com/Zhoucheng133/netPlayer-Mobile), designed to run seamlessly in browsers as a PWA (Progressive Web App).
 
----
-
 ## Feature Comparison
 
 For detailed features, please refer to the [netPlayer Mobile](https://github.com/Zhoucheng133/netPlayer-Mobile) repository. Key differences on the Web version:
@@ -26,8 +24,6 @@ For detailed features, please refer to the [netPlayer Mobile](https://github.com
 | Song download & offline playback | ✅ | ❌ |
 | Lyrics | ✅ | ❌ |
 | Remote control desktop netPlayer | ✅ | ❌ |
-
----
 
 ## Deployment & Usage
 
@@ -40,8 +36,6 @@ Deploy the static build files from the Release artifacts to any static hosting p
 
 ### 2. PWA Support
 This project supports PWA installation. On some mobile devices, the bottom navigation bar might overlap with content; you can adjust the bottom spacing in the app settings.
-
----
 
 ## Local Build & Development
 
@@ -60,8 +54,6 @@ This project supports PWA installation. On some mobile devices, the bottom navig
    ```bash
    flutter build web --base-href /netPlayer-Web/
    ```
-
----
 
 ## Links
 

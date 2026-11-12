@@ -1,6 +1,6 @@
 # netPlayer Web
 
-[English Document](./document/en.md) | **简体中文**
+**简体中文** | [English](./document/en.md)
 
 ## 简介
 

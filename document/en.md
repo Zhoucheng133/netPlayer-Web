@@ -1,6 +1,6 @@
 # netPlayer Web
 
-**简体中文** | [English Document](./en.md) *(You are here)*
+[简体中文](../README.md) | **English**
 
 ## Introduction
 
